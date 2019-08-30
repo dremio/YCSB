@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2012 - 2018 YCSB contributors. All rights reserved.
+Copyright (c) 2012 - 2019 YCSB contributors. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you
 may not use this file except in compliance with the License. You
@@ -120,12 +120,13 @@ LICENSE file.
     <cassandra.cql.version>3.0.0</cassandra.cql.version>
     <cloudspanner.version>0.36.0-beta</cloudspanner.version>
     <couchbase.version>1.4.10</couchbase.version>
-		<couchbase2.version>2.3.1</couchbase2.version>
-		<crail.version>1.1-incubating</crail.version>
+    <couchbase2.version>2.3.1</couchbase2.version>
+    <crail.version>1.1-incubating</crail.version>
     <elasticsearch5-version>5.5.1</elasticsearch5-version>
     <foundationdb.version>5.2.5</foundationdb.version>
     <geode.version>1.2.0</geode.version>
     <googlebigtable.version>1.4.0</googlebigtable.version>
+    <googlefirestore.version>1.29.0</googlefirestore.version>
     <griddb.version>4.0.0</griddb.version>
     <hbase098.version>0.98.14-hadoop2</hbase098.version>
     <hbase10.version>1.0.2</hbase10.version>
@@ -171,8 +172,8 @@ LICENSE file.
     <module>cassandra</module>
     <module>cloudspanner</module>
     <module>couchbase</module>
-		<module>couchbase2</module>
-		<module>crail</module>
+    <module>couchbase2</module>
+    <module>crail</module>
     <module>dynamodb</module>
     <module>elasticsearch</module>
     <module>elasticsearch5</module>
@@ -180,6 +181,7 @@ LICENSE file.
     <module>geode</module>
     <module>googlebigtable</module>
     <module>googledatastore</module>
+    <module>googlefirestore</module>
     <module>griddb</module>
     <module>hbase098</module>
     <module>hbase10</module>
