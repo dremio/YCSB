@@ -208,6 +208,76 @@ public class GoogleFirestoreClient extends DB {
     }
   }
 
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String startRange, String endRange, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Query query;
+    if (startRange != null && endRange != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
+          .whereLessThanOrEqualTo("", endRange).limit(recordCount);
+    } else if (startRange != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
+          .limit(recordCount);
+    } else if (endRange != null) {
+      query = fsDb.collection(table).whereLessThanOrEqualTo("startTime", endRange)
+          .limit(recordCount);
+    } else {
+      LOGGER.error("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, fields, recordCount, startRange, endRange, result,
+        "scanWithCreatedTimeFilter");
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Query query;
+    if (startKey != null && endKey != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("__name__", startKey)
+          .whereLessThanOrEqualTo("__name__", endKey)
+          .limit(recordCount);
+    } else if (startKey != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("__name__", startKey)
+          .limit(recordCount);
+    } else if (endKey != null) {
+      query = fsDb.collection(table).whereLessThanOrEqualTo("__name__", endKey)
+          .limit(recordCount);
+    } else {
+      LOGGER.error("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, fields, recordCount, startKey, endKey, result,
+        "scanWithNamespaceKeyFilter");
+  }
+
+  private Status scanWithFilterHelper(Query query, Set<String> fields, int recordCount, String startRange,
+                                      String endRange, Vector<HashMap<String, ByteIterator>> result,
+                                      String operationName) {
+    try {
+      QuerySnapshot querySs = query.get().get();
+      for (DocumentSnapshot docSs : querySs.getDocuments()) {
+        HashMap<String, ByteIterator> scanres = new HashMap<>();
+        parseFields(fields, docSs, scanres);
+        result.add(scanres);
+      }
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(operationName + ": " + startRange + ", " + endRange + " : " + recordCount);
+      }
+      return Status.OK;
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOGGER.error("Interrupted during scan().", e);
+      return Status.ERROR;
+    } catch (ExecutionException e) {
+      LOGGER.error("Error during scan().", e);
+      return Status.ERROR;
+    }
+  }
+
   private void parseFields(
       Set<String> fields, DocumentSnapshot docSs, Map<String, ByteIterator> result) {
     Set<String> docFields = fields == null ? docSs.getData().keySet() : fields;
