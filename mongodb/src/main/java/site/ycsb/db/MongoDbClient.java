@@ -33,6 +33,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -448,6 +449,95 @@ public class MongoDbClient extends DB {
     } catch (Exception e) {
       System.err.println(e.toString());
       return Status.ERROR;
+    }
+  }
+
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String startRange, String endRange, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Document query;
+    if (startRange != null && endRange != null) {
+      query = new Document("jobInfo.startTime", new Document("$gte", startRange).append("$lte", endRange));
+
+    } else if (startRange != null) {
+      query = new Document("jobInfo.startTime", new Document("$gte", startRange));
+
+    } else if (endRange != null) {
+      query = new Document("jobInfo.startTime", new Document("$lte", endRange));
+
+    } else {
+      System.err.println("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, table, "jobId", recordCount, result,
+        "scanWithCreatedTimeFilter");
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Document query;
+    if (startKey != null && endKey != null) {
+      query = new Document("pathKey", new Document("$gte", startKey).append("$lte", endKey));
+
+    } else if (startKey != null) {
+      query = new Document("pathKey", new Document("$gte", startKey));
+
+    } else if (endKey != null) {
+      query = new Document("pathKey", new Document("$lte", endKey));
+
+    } else {
+      System.err.println("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, table, "pathKey", recordCount, result,
+        "scanWithNamespaceKeyFilter");
+  }
+
+  //Scan with filter only supports selecting all fields (select *)
+  private Status scanWithFilterHelper(Document query, String table, String sortField, int recordCount,
+                                      Vector<HashMap<String, ByteIterator>> result,
+                                      String operationName) {
+    // For debugging queries
+    // See MongoDB Java Client Doc: https://mongodb.github.io/mongo-java-driver/3.12/driver/
+    //System.out.println(operationName + " - Query JSON: \n" + query.toJson() + "\n");
+
+    MongoCursor<Document> cursor = null;
+    try {
+      MongoCollection<Document> collection = database.getCollection(table);
+
+      FindIterable<Document> findIterable =
+          collection.find(query).sort(Sorts.ascending(sortField)).limit(recordCount);
+
+      cursor = findIterable.iterator();
+
+      if (!cursor.hasNext()) {
+        System.err.println("Nothing found in scan with filter for " + operationName);
+        return Status.ERROR;
+      }
+
+      result.ensureCapacity(recordCount);
+
+      while (cursor.hasNext()) {
+        HashMap<String, ByteIterator> resultMap =
+            new HashMap<String, ByteIterator>();
+
+        Document obj = cursor.next();
+        fillMap(resultMap, obj);
+
+        result.add(resultMap);
+      }
+
+      return Status.OK;
+    } catch (Exception e) {
+      System.err.println(e.toString());
+      return Status.ERROR;
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
     }
   }
 
