@@ -55,6 +55,8 @@ public class GoogleFirestoreClient extends DB {
 
   private static final Logger LOGGER = Logger.getLogger(GoogleFirestoreClient.class);
 
+  private static final String DOCUMENT_ID = "__name__";
+
   private Firestore fsDb;
 
   @Override
@@ -119,7 +121,7 @@ public class GoogleFirestoreClient extends DB {
       int recordcount,
       Set<String> fields,
       Vector<HashMap<String, ByteIterator>> result) {
-    Query query = fsDb.collection(table).orderBy("__name__").startAt(startkey).limit(recordcount);
+    Query query = fsDb.collection(table).orderBy(DOCUMENT_ID).startAt(startkey).limit(recordcount);
 
     try {
       QuerySnapshot querySs = query.get().get();
@@ -204,6 +206,77 @@ public class GoogleFirestoreClient extends DB {
       return Status.ERROR;
     } catch (ExecutionException e) {
       LOGGER.error("Error during delete().", e);
+      return Status.ERROR;
+    }
+  }
+
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String startRange, String endRange, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Query query;
+    if (startRange != null && endRange != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
+          .whereLessThanOrEqualTo("", endRange).limit(recordCount);
+    } else if (startRange != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
+          .limit(recordCount);
+    } else if (endRange != null) {
+      query = fsDb.collection(table).whereLessThanOrEqualTo("startTime", endRange)
+          .limit(recordCount);
+    } else {
+      LOGGER.error("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, fields, recordCount, startRange, endRange, result,
+        "scanWithCreatedTimeFilter");
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    Query query;
+    if (startKey != null && endKey != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo(DOCUMENT_ID, startKey)
+          .whereLessThanOrEqualTo(DOCUMENT_ID, endKey)
+          .limit(recordCount);
+    } else if (startKey != null) {
+      query = fsDb.collection(table).whereGreaterThanOrEqualTo(DOCUMENT_ID, startKey)
+          .limit(recordCount);
+    } else if (endKey != null) {
+      query = fsDb.collection(table).whereLessThanOrEqualTo(DOCUMENT_ID, endKey)
+          .limit(recordCount);
+    } else {
+      LOGGER.error("No valid range is provided");
+      return Status.BAD_REQUEST;
+    }
+
+    return scanWithFilterHelper(query, fields, recordCount, startKey, endKey, result,
+        "scanWithNamespaceKeyFilter");
+  }
+
+  //Scan with filter only supports selecting all fields (select *)
+  private Status scanWithFilterHelper(Query query, Set<String> fields, int recordCount, String startRange,
+                                      String endRange, Vector<HashMap<String, ByteIterator>> result,
+                                      String operationName) {
+    try {
+      QuerySnapshot querySs = query.get().get();
+      for (DocumentSnapshot docSs : querySs.getDocuments()) {
+        HashMap<String, ByteIterator> scanres = new HashMap<>();
+        parseFields(fields, docSs, scanres);
+        result.add(scanres);
+      }
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(operationName + ": " + startRange + ", " + endRange + " : " + recordCount);
+      }
+      return Status.OK;
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOGGER.error("Interrupted during scan().", e);
+      return Status.ERROR;
+    } catch (ExecutionException e) {
+      LOGGER.error("Error during scan().", e);
       return Status.ERROR;
     }
   }
