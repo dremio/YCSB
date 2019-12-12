@@ -451,6 +451,20 @@ public class MongoDbClient extends DB {
     }
   }
 
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String createdTime, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    //TODO
+    return Status.NOT_IMPLEMENTED;
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    //TODO
+    return Status.NOT_IMPLEMENTED;
+  }
+
   /**
    * Fills the map with the values from the DBObject.
    * 
