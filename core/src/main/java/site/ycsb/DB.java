@@ -132,4 +132,34 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status delete(String table, String key);
+
+  /**
+   *
+   * @param table The name of the table.
+   * @param createdTime The created_time field value to filter on.
+   * @param recordcount The number of records to retrieve.
+   * @param fields The list of fields to read, or null for all of them.
+   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record.
+   * @return The result of the operation.
+   */
+  public Status scanWithCreatedTimeFilter(String table, String createdTime, int recordcount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    return Status.NOT_IMPLEMENTED;
+  }
+
+  /**
+   *
+   * @param table The name of the table.
+   * @param startkey TODO
+   * @param recordcount The number of records to retrieve.
+   * @param fields The list of fields to read, or null for all of them.
+   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
+   * @return The result of the operation.
+   */
+  public Status scanWithNamespaceKeyFilter(String table, String startkey, int recordcount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    return Status.NOT_IMPLEMENTED;
+  }
+
+
 }
