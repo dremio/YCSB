@@ -208,6 +208,20 @@ public class GoogleFirestoreClient extends DB {
     }
   }
 
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String createdTime, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    //TODO
+    return Status.NOT_IMPLEMENTED;
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    //TODO
+    return Status.NOT_IMPLEMENTED;
+  }
+
   private void parseFields(
       Set<String> fields, DocumentSnapshot docSs, Map<String, ByteIterator> result) {
     Set<String> docFields = fields == null ? docSs.getData().keySet() : fields;
