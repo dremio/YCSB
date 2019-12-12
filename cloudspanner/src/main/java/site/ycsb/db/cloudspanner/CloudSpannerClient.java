@@ -116,6 +116,38 @@ public class CloudSpannerClient extends DB {
 
   private static final ArrayList<String> STANDARD_FIELDS = new ArrayList<>();
 
+  private static final String JOBS_TABLE_NAME = "jobs";
+
+  private static final String JOBS_PRIMARY_KEY_COLUMN = "JOBID";
+
+  private static final ArrayList<String> JOBS_FIELDS = new ArrayList<>(
+      Arrays.asList(
+          "JOBID",
+          "ALL_DATASETS",
+          "DATASET",
+          "DATASET_VERSION",
+          "DURATION",
+          "END_TIME,JOB_RESULT",
+          "JOB_STATE",
+          "PARENT_DATASET",
+          "QUERY_TYPE",
+          "QUEUE_NAME",
+          "SPACE",
+          "SQL",
+          "START_TIME",
+          "USER"));
+
+  private static final String DAC_NAMESPACE_TABLE_NAME = "dac_namespace";
+
+  private static final String DAC_NAMESPACE_PRIMARY_KEY_COLUMN = "NAMESPACE_INTERNAL_KEY";
+
+  private static final ArrayList<String> DAC_NAMESPACE_FIELDS = new ArrayList<>(
+      Arrays.asList(
+          "NAMESPACE_INTERNAL_KEY",
+          "ENTITY_TYPE",
+          "ENTITY_ID",
+          "CONTAINER"));
+
   private static final String PRIMARY_KEY_COLUMN = "id";
 
   private static final Logger LOGGER = Logger.getLogger(CloudSpannerClient.class.getName());
@@ -301,6 +333,7 @@ public class CloudSpannerClient extends DB {
     }
   }
 
+  //Works with jobs and dac_namespace schema as well
   @Override
   public Status scan(
       String table, String startKey, int recordCount, Set<String> fields,
@@ -308,7 +341,18 @@ public class CloudSpannerClient extends DB {
     if (queriesForReads) {
       return scanUsingQuery(table, startKey, recordCount, fields, result);
     }
-    Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
+
+    Iterable<String> columns;
+    if(table.equals(JOBS_TABLE_NAME)) {
+      columns = JOBS_FIELDS;
+
+    } else if(table.equals(DAC_NAMESPACE_TABLE_NAME)) {
+      columns = DAC_NAMESPACE_FIELDS;
+
+    } else {
+      columns = fields == null ? STANDARD_FIELDS : fields;
+
+    }
     KeySet keySet =
         KeySet.newBuilder().addRange(KeyRange.closedClosed(Key.of(startKey), Key.of())).build();
     try (ResultSet resultSet = dbClient.singleUse(timestampBound)
@@ -325,10 +369,22 @@ public class CloudSpannerClient extends DB {
     }
   }
 
+  //Works with jobs and dac_namespace schema as well
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
+    String primaryKeyColumn;
+    if(table.equals(JOBS_TABLE_NAME)) {
+      primaryKeyColumn = JOBS_PRIMARY_KEY_COLUMN;
+
+    } else if(table.equals(DAC_NAMESPACE_TABLE_NAME)) {
+      primaryKeyColumn = DAC_NAMESPACE_PRIMARY_KEY_COLUMN;
+
+    } else {
+      primaryKeyColumn = PRIMARY_KEY_COLUMN;
+    }
+
     Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
-    m.set(PRIMARY_KEY_COLUMN).to(key);
+    m.set(primaryKeyColumn).to(key);
     for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
       m.set(e.getKey()).to(e.getValue().toString());
     }
@@ -341,11 +397,23 @@ public class CloudSpannerClient extends DB {
     return Status.OK;
   }
 
+  //Works with jobs and dac_namespace schema as well
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
+    String primaryKeyColumn;
+    if(table.equals(JOBS_TABLE_NAME)) {
+      primaryKeyColumn = JOBS_PRIMARY_KEY_COLUMN;
+
+    } else if(table.equals(DAC_NAMESPACE_TABLE_NAME)) {
+      primaryKeyColumn = DAC_NAMESPACE_PRIMARY_KEY_COLUMN;
+
+    } else {
+      primaryKeyColumn = PRIMARY_KEY_COLUMN;
+    }
+
     if (bufferedMutations.size() < batchInserts) {
       Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
-      m.set(PRIMARY_KEY_COLUMN).to(key);
+      m.set(primaryKeyColumn).to(key);
       for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
         m.set(e.getKey()).to(e.getValue().toString());
       }
@@ -388,6 +456,80 @@ public class CloudSpannerClient extends DB {
       return Status.ERROR;
     }
     return Status.OK;
+  }
+
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String startRange, String endRange, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    String filterClause = "WHERE START_TIME";
+    if (startRange != null && endRange != null) {
+      filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
+          .concat(" ORDER BY JOBID").concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (startRange != null) {
+      filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY JOBID")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (endRange != null) {
+      filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY JOBID")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else {
+      LOGGER.log(Level.INFO, "No valid range is provided");
+      return Status.BAD_REQUEST;
+
+    }
+
+    return scanWithFilterHelper(filterClause, JOBS_TABLE_NAME, JOBS_FIELDS,
+        fields, result, "scanWithCreatedTimeFilter");
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    String filterClause = "WHERE NAMESPACE_INTERNAL_KEY";
+    if (startKey != null && endKey != null) {
+      filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
+          .concat(" ORDER BY NAMESPACE_INTERNAL_KEY").concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (startKey != null) {
+      filterClause.concat(" >= ").concat(startKey).concat(" ORDER BY NAMESPACE_INTERNAL_KEY")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (endKey != null) {
+      filterClause.concat(" <= ").concat(endKey).concat(" ORDER BY NAMESPACE_INTERNAL_KEY")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else {
+      LOGGER.log(Level.INFO, "No valid range is provided");
+      return Status.BAD_REQUEST;
+
+    }
+
+    return scanWithFilterHelper(filterClause, DAC_NAMESPACE_TABLE_NAME, DAC_NAMESPACE_FIELDS,
+        fields, result, "scanWithNamespaceKeyFilter");
+  }
+
+  //Scan with filter only supports selecting all fields (select *)
+  private Status scanWithFilterHelper(String filterClause, String tableName, ArrayList tableFields,
+                                      Set<String> fields, Vector<HashMap<String, ByteIterator>> result,
+                                      String operationName) {
+    Iterable<String> columns = fields == null ? tableFields : fields;
+    Statement query = Statement.newBuilder("SELECT * FROM ").append(tableName).append(" ").append(filterClause).build();
+
+    LOGGER.log(Level.INFO, operationName + " - SQL Query: ", query.getSql());
+
+    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
+      while (resultSet.next()) {
+        HashMap<String, ByteIterator> row = new HashMap<>();
+        decodeStruct(columns, resultSet, row);
+        result.add(row);
+      }
+      return Status.OK;
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, operationName, e);
+      return Status.ERROR;
+    }
   }
 
   private static void decodeStruct(
