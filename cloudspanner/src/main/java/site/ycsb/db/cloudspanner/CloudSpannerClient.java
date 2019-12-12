@@ -116,6 +116,22 @@ public class CloudSpannerClient extends DB {
 
   private static final ArrayList<String> STANDARD_FIELDS = new ArrayList<>();
 
+  private static final String JOB_STORE_TABLE_NAME = "job_store";
+
+  private static final int JOB_STORE_FIELD_COUNT = 14;
+
+  private static final ArrayList<String> JOB_STORE_FIELDS = new ArrayList<>(
+      Arrays.asList("JOBID", "USER", "SPACE", "SQL", "QUERY_TYPE", "JOB_STATE", "DATASET",
+          "DATASET_VERSION", "START_TIME", "END_TIME", "QUEUE_NAME", "DURATION", "PARENT_DATASET",
+          "ALL_DATASETS"));
+
+  private static final String NAMESPACES_TABLE_NAME = "namespaces";
+
+  private static final int NAMESPACES_FIELD_COUNT = 5;
+
+  private static final ArrayList<String> NAMESPACES_FIELDS = new ArrayList<>(
+      Arrays.asList("NAMESPACEINTERNALKEY", "ENTITY_TYPE", "ENTITY_ID", "CONTAINER"));
+
   private static final String PRIMARY_KEY_COLUMN = "id";
 
   private static final Logger LOGGER = Logger.getLogger(CloudSpannerClient.class.getName());
@@ -388,6 +404,88 @@ public class CloudSpannerClient extends DB {
       return Status.ERROR;
     }
     return Status.OK;
+  }
+
+  @Override
+  public Status scanWithCreatedTimeFilter(String table, String startRange, String endRange, int recordCount,
+                                          Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    String filterClause = "WHERE START_TIME";
+    if (startRange != null && endRange != null) {
+      filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
+          .concat(" ORDER BY JOB_ID").concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (startRange != null) {
+      filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY JOB_ID")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (endRange != null) {
+      filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY JOB_ID")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else {
+      LOGGER.log(Level.INFO, "No valid range is provided");
+      return Status.BAD_REQUEST;
+
+    }
+
+    return scanWithFilterHelper(filterClause, JOB_STORE_TABLE_NAME, JOB_STORE_FIELD_COUNT, JOB_STORE_FIELDS,
+        fields, result, "scanWithCreatedTimeFilter");
+  }
+
+  @Override
+  public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
+                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+    String filterClause = "WHERE NAMESPACEINTERNALKEY";
+    if (startKey != null && endKey != null) {
+      filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
+          .concat(" ORDER BY NAMESPACEINTERNALKEY").concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (startKey != null) {
+      filterClause.concat(" >= ").concat(startKey).concat(" ORDER BY NAMESPACEINTERNALKEY")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else if (endKey != null) {
+      filterClause.concat(" <= ").concat(endKey).concat(" ORDER BY NAMESPACEINTERNALKEY")
+          .concat(" LIMIT ").concat(Integer.toString(recordCount));
+
+    } else {
+      LOGGER.log(Level.INFO, "No valid range is provided");
+      return Status.BAD_REQUEST;
+
+    }
+
+    return scanWithFilterHelper(filterClause, NAMESPACES_TABLE_NAME, NAMESPACES_FIELD_COUNT, NAMESPACES_FIELDS,
+        fields, result, "scanWithNamespaceKeyFilter");
+  }
+
+  private Status scanWithFilterHelper(String filterClause, String tableName, int tableFieldCount, ArrayList tableFields,
+                                      Set<String> fields, Vector<HashMap<String, ByteIterator>> result,
+                                      String operationName) {
+    Iterable<String> columns = fields == null ? tableFields : fields;
+    Statement query;
+    if (fields == null || fields.size() == tableFieldCount) {
+      query = Statement.newBuilder("SELECT * FROM ").append(tableName).append(" ").append(filterClause).build();
+    } else {
+      Joiner joiner = Joiner.on(',');
+      query = Statement.newBuilder("SELECT ")
+          .append(joiner.join(fields))
+          .append(" FROM ")
+          .append(tableName)
+          .append(" ")
+          .append(filterClause)
+          .build();
+    }
+    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
+      while (resultSet.next()) {
+        HashMap<String, ByteIterator> row = new HashMap<>();
+        decodeStruct(columns, resultSet, row);
+        result.add(row);
+      }
+      return Status.OK;
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, operationName, e);
+      return Status.ERROR;
+    }
   }
 
   private static void decodeStruct(
