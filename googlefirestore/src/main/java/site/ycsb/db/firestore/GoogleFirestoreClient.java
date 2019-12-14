@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import org.apache.log4j.Logger;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /** YCSB Client for Google's Cloud Firestore. */
 public class GoogleFirestoreClient extends DB {
@@ -148,15 +150,29 @@ public class GoogleFirestoreClient extends DB {
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     DocumentReference docRef = toReference(table, key);
-    Map<String, Object> data = toData(values);
+    Map<String, Object> data;
 
-    try {
-      docRef.set(data, SetOptions.merge()).get();
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("update: Document: " + key + " : " + data.toString());
+    try{
+      if(table.equals("jobs")) {
+        //When updating documents int jobs collection, only update the jobState field
+        data = new HashMap<>(values.size());
+        ByteIterator jobState = values.get("jobSatate");
+        data.put("jobState", jobState.toString());
+        WriteResult writeResult = docRef.update(data).get();
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("update: Update time: " + writeResult.getUpdateTime());
+          LOGGER.debug("update: Document: " + key + " : " + data.toString());
+        }
+        return Status.OK;
+      } else {
+        data = toData(values);
+        WriteResult writeResult = docRef.set(data, SetOptions.merge()).get();
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("update: Update time: " + writeResult.getUpdateTime());
+          LOGGER.debug("update: Document: " + key + " : " + data.toString());
+        }
+        return Status.OK;
       }
-      return Status.OK;
-
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       LOGGER.error("Interrupted during update().", e);
@@ -169,13 +185,23 @@ public class GoogleFirestoreClient extends DB {
 
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
-    DocumentReference docRef = toReference(table, key);
-    Map<String, Object> data = toData(values);
-
     try {
-      WriteResult writeResult = docRef.set(data, SetOptions.merge()).get();
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("insert: Update time: " + writeResult.getUpdateTime());
+      DocumentReference docRef = toReference(table, key);
+
+      if(table.equals("jobs")) {
+        //Inserts JobResult (in JSON) as a document into Firestore
+        JSONParser parser = new JSONParser();
+        Object obj = parser.parse(values.get("jobResult").toString());
+        WriteResult writeResult = docRef.set(obj).get();
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("insert: Update time: " + writeResult.getUpdateTime());
+        }
+      } else {
+        Map<String, Object> data = toData(values);
+        WriteResult writeResult = docRef.set(data, SetOptions.merge()).get();
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("insert: Update time: " + writeResult.getUpdateTime());
+        }
       }
       return Status.OK;
 
@@ -183,7 +209,7 @@ public class GoogleFirestoreClient extends DB {
       Thread.currentThread().interrupt();
       LOGGER.error("Interrupted during insert().", e);
       return Status.ERROR;
-    } catch (ExecutionException e) {
+    } catch (ExecutionException | ParseException e) {
       LOGGER.error("Error during insert().", e);
       return Status.ERROR;
     }
