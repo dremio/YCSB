@@ -43,7 +43,7 @@ public class KeyRangeSearchWorkload extends Workload {
     if (result.size() < 50) {
       return false;
     }
-    Measurements.getMeasurements().measure("KEY_RANGE_SEARCH", (int) (startTime - endTime) / 1000);
+    Measurements.getMeasurements().measure("KEY_RANGE_SEARCH", (int) (endTime - startTime) / 1000);
     return status.isOk();
   }
 }
