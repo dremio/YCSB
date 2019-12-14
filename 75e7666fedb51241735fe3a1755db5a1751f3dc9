@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a61f6181_07b200e3",
+        "filename": "cloudspanner/src/main/java/site/ycsb/db/cloudspanner/CloudSpannerClient.java",
+        "patchSetId": 18
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-14T00:32:01Z",
+      "side": 1,
+      "message": "These NAMESPACE_INTERNAL_KEY order by statements should be entityPathKey",
+      "revId": "75e7666fedb51241735fe3a1755db5a1751f3dc9",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    }
+  ]
+}
