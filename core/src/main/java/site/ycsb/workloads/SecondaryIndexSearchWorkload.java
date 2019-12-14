@@ -43,7 +43,7 @@ public class SecondaryIndexSearchWorkload extends Workload {
     if (result.size() < 50) {
       return false;
     }
-    Measurements.getMeasurements().measure("SECONDARY_INDEX_SEARCH", (int) (startTime - endTime) / 1000);
+    Measurements.getMeasurements().measure("SECONDARY_INDEX_SEARCH", (int) (endTime - startTime) / 1000);
     return status.isOk();
   }
 }
