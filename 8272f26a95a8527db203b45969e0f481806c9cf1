@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "46c57529_467b6d6e",
+        "filename": "cloudspanner/src/main/java/site/ycsb/db/cloudspanner/CloudSpannerClient.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 548,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-15T14:07:32Z",
+      "side": 1,
+      "message": "Compilation fails, this should be Level.FINE",
+      "range": {
+        "startLine": 548,
+        "startChar": 4,
+        "endLine": 548,
+        "endChar": 26
+      },
+      "revId": "8272f26a95a8527db203b45969e0f481806c9cf1",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
