@@ -25,3 +25,4 @@ output*
 /differentbin/
 */bin/*
 */*/bin/*
+*/.factorypath
