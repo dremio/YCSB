@@ -504,6 +504,12 @@ public class MongoDbClient extends DB {
   public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     Document query;
+    if (startKey != null) {
+      startKey = startKey.replace('/', '_');
+    }
+    if (endKey != null) {
+      endKey = endKey.replace('/', '_');
+    }
     if (startKey != null && endKey != null) {
       query = new Document("pathKey", new Document("$gte", startKey).append("$lte", endKey));
 
