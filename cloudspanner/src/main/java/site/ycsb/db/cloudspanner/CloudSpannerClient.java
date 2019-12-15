@@ -482,15 +482,15 @@ public class CloudSpannerClient extends DB {
                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     String filterClause = "WHERE startTime";
     if (startRange != null && endRange != null) {
-      filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
+      filterClause = filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
           .concat(" ORDER BY jobId").concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (startRange != null) {
-      filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY jobId")
+      filterClause = filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY jobId")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (endRange != null) {
-      filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY jobId")
+      filterClause = filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY jobId")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else {
@@ -508,15 +508,15 @@ public class CloudSpannerClient extends DB {
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     String filterClause = "WHERE entityPathKey";
     if (startKey != null && endKey != null) {
-      filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
+      filterClause = filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
           .concat(" ORDER BY entityPathKey").concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (startKey != null) {
-      filterClause.concat(" >= ").concat(startKey).concat(" ORDER BY entityPathKey")
+      filterClause = filterClause.concat(" >= ").concat(startKey).concat(" ORDER BY entityPathKey")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (endKey != null) {
-      filterClause.concat(" <= ").concat(endKey).concat(" ORDER BY entityPathKey")
+      filterClause = filterClause.concat(" <= ").concat(endKey).concat(" ORDER BY entityPathKey")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else {
