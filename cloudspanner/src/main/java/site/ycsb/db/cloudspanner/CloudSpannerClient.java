@@ -223,8 +223,8 @@ public class CloudSpannerClient extends DB {
       Properties properties = getProperties();
       String host = properties.getProperty(CloudSpannerProperties.HOST);
       String project = properties.getProperty(CloudSpannerProperties.PROJECT);
-      String instance = properties.getProperty(CloudSpannerProperties.INSTANCE, "ycsb-instance");
-      String database = properties.getProperty(CloudSpannerProperties.DATABASE, "ycsb-database");
+      String instance = properties.getProperty(CloudSpannerProperties.INSTANCE, "spandb1");
+      String database = properties.getProperty(CloudSpannerProperties.DATABASE, "ycsb-db");
 
       fieldCount = Integer.parseInt(properties.getProperty(
           CoreWorkload.FIELD_COUNT_PROPERTY, CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT));

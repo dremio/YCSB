@@ -24,7 +24,7 @@
 
 recordcount=100
 operationcount=100
-workload=site.ycsb.workloads.KeyRangeSeachWorkload
+workload=site.ycsb.workloads.KeyRangeSearchWorkload
 
 readallfields=true
 
