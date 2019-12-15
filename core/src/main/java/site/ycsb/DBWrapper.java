@@ -268,17 +268,16 @@ public class DBWrapper extends DB {
       Set<String> fields,
       Vector<HashMap<String, ByteIterator>> result) {
     try (final TraceScope span = tracer.newScope(scopeStringScanWithCreatedTimeFilter)) {
-      long ist = measurements.getIntendedtartTimeNs();
-      long st = System.nanoTime();
+      long intendedtartTimeNs = measurements.getIntendedtartTimeNs();
+      long startTime = System.nanoTime();
       Status res = db.scanWithCreatedTimeFilter(table, startRange, endRange,
           recordCount, fields, result);
-      long en = System.nanoTime();
+      long endTime = System.nanoTime();
       final String op = "SCAN_WITH_CREATED_TIME_FILTER";
-      measure(op, res, ist, st, en);
+      measure(op, res, intendedtartTimeNs, startTime, endTime);
       measurements.reportStatus(op, res);
       return res;
     }
-
   }
 
   /**
@@ -299,13 +298,13 @@ public class DBWrapper extends DB {
       Set<String> fields,
       Vector<HashMap<String, ByteIterator>> result) {
     try (final TraceScope span = tracer.newScope(scopeStringScanWithNamespaceKeyFilter)) {
-      long ist = measurements.getIntendedtartTimeNs();
-      long st = System.nanoTime();
+      long intendedtartTimeNs = measurements.getIntendedtartTimeNs();
+      long startTime = System.nanoTime();
       Status res = db.scanWithNamespaceKeyFilter(table, startKey, endKey,
           recordCount, fields, result);
-      long en = System.nanoTime();
+      long endTime = System.nanoTime();
       final String op = "SCAN_WITH_NAMESPACE_KEY_FILTER";
-      measure(op, res, ist, st, en);
+      measure(op, res, intendedtartTimeNs, startTime, endTime);
       measurements.reportStatus(op, res);
       return res;
     }
