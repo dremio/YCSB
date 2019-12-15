@@ -48,6 +48,8 @@ public class DBWrapper extends DB {
   private final String scopeStringRead;
   private final String scopeStringScan;
   private final String scopeStringUpdate;
+  private final String scopeStringScanWithCreatedTimeFilter;
+  private final String scopeStringScanWithNamespaceKeyFilter;
 
   public DBWrapper(final DB db, final Tracer tracer) {
     this.db = db;
@@ -61,6 +63,10 @@ public class DBWrapper extends DB {
     scopeStringRead = simple + "#read";
     scopeStringScan = simple + "#scan";
     scopeStringUpdate = simple + "#update";
+    scopeStringScanWithCreatedTimeFilter = simple +
+        "#scan_with_created_time_filter";
+    scopeStringScanWithNamespaceKeyFilter = simple +
+        "#scan_with_namespace_key_filter";
   }
 
   /**
@@ -241,6 +247,66 @@ public class DBWrapper extends DB {
       long en = System.nanoTime();
       measure("DELETE", res, ist, st, en);
       measurements.reportStatus("DELETE", res);
+      return res;
+    }
+  }
+
+  /**
+   *
+   * @param table The name of the table.
+   * @param startRange The start range of created_time field value to filter on, start range inclusive.
+   * @param endRange The end range of created_time field value to filter on, end range inclusive.
+   * @param recordCount The number of records to retrieve.
+   * @param fields The list of fields to read, or null for all of them.
+   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record.
+   * @return The result of the operation.
+   */
+  public Status scanWithCreatedTimeFilter(
+      String table, String startRange,
+      String endRange,
+      int recordCount,
+      Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+    try (final TraceScope span = tracer.newScope(scopeStringScanWithCreatedTimeFilter)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st = System.nanoTime();
+      Status res = db.scanWithCreatedTimeFilter(table, startRange, endRange,
+          recordCount, fields, result);
+      long en = System.nanoTime();
+      final String op = "SCAN_WITH_CREATED_TIME_FILTER";
+      measure(op, res, ist, st, en);
+      measurements.reportStatus(op, res);
+      return res;
+    }
+
+  }
+
+  /**
+   *
+   * @param table The name of the table.
+   * @param startKey the start range of namespaceKey, start range inclusive.
+   * @param endKey the end range of namespaceKey, end range inclusive.
+   * @param recordCount The number of records to retrieve.
+   * @param fields The list of fields to read, or null for all of them.
+   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
+   * @return The result of the operation.
+   */
+  public Status scanWithNamespaceKeyFilter(
+      String table,
+      String startKey,
+      String endKey,
+      int recordCount,
+      Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+    try (final TraceScope span = tracer.newScope(scopeStringScanWithNamespaceKeyFilter)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st = System.nanoTime();
+      Status res = db.scanWithNamespaceKeyFilter(table, startKey, endKey,
+          recordCount, fields, result);
+      long en = System.nanoTime();
+      final String op = "SCAN_WITH_NAMESPACE_KEY_FILTER";
+      measure(op, res, ist, st, en);
+      measurements.reportStatus(op, res);
       return res;
     }
   }
