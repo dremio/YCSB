@@ -244,4 +244,52 @@ public class DBWrapper extends DB {
       return res;
     }
   }
+
+  public Status scanWithCreatedTimeFilter(
+      String table, String startRange,
+      String endRange,
+      int recordCount,
+      Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+    try (final TraceScope span = tracer.newScope(scopeStringDelete)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st = System.nanoTime();
+      Status res = db.scanWithCreatedTimeFilter(table, startRange, endRange,
+          recordCount, fields, result);
+      long en = System.nanoTime();
+      measure("DELETE", res, ist, st, en);
+      measurements.reportStatus("DELETE", res);
+      return res;
+    }
+
+  }
+
+  /**
+   *
+   * @param table The name of the table.
+   * @param startKey the start range of namespaceKey, start range inclusive.
+   * @param endKey the end range of namespaceKey, end range inclusive.
+   * @param recordCount The number of records to retrieve.
+   * @param fields The list of fields to read, or null for all of them.
+   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
+   * @return The result of the operation.
+   */
+  public Status scanWithNamespaceKeyFilter(
+      String table,
+      String startKey,
+      String endKey,
+      int recordCount,
+      Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+    try (final TraceScope span = tracer.newScope(scopeStringDelete)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st = System.nanoTime();
+      Status res = db.scanWithNamespaceKeyFilter(table, startKey, endKey,
+          recordCount, fields, result);
+      long en = System.nanoTime();
+      measure("DELETE", res, ist, st, en);
+      measurements.reportStatus("DELETE", res);
+      return res;
+    }
+  }
 }
