@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8aa654be_a331f007",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-15T01:40:08Z",
+      "side": 1,
+      "message": "Don\u0027t re-use scopeStringDelete. Create new scopeStrings.",
+      "revId": "8792655f22257e6050e7b258179de45762718c08",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "62d78394_b71803c4",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-15T01:40:08Z",
+      "side": 1,
+      "message": "This is not a delete. Please use a new string like SCAN_WITH_CREATED_TIME_FILTER",
+      "revId": "8792655f22257e6050e7b258179de45762718c08",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "02791525_fdd107e4",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-15T01:40:08Z",
+      "side": 1,
+      "message": "See above comments.",
+      "revId": "8792655f22257e6050e7b258179de45762718c08",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    }
+  ]
+}
