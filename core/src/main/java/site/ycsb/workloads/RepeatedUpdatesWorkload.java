@@ -65,7 +65,7 @@ public class RepeatedUpdatesWorkload extends Workload {
     Status status = Status.OK;
     for (int i = 1; i <= 5 && status.isOk(); i++) {
       updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
-      status = db.update("jobs<", tracker.jobId, updatedValues);
+      status = db.update("jobs", tracker.jobId, updatedValues);
     }
     final long endTime = System.nanoTime();
     Measurements.getMeasurements().measure("RAPID_UPDATE", (int) (endTime - startTime) / 1000);
