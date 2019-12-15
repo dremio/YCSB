@@ -266,6 +266,12 @@ public class GoogleFirestoreClient extends DB {
   public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     Query query;
+    if (startKey != null) {
+      startKey = startKey.replace('/', '_');
+    }
+    if (endKey != null) {
+      endKey = endKey.replace('/', '_');
+    }
     if (startKey != null && endKey != null) {
       query = fsDb.collection(table).whereGreaterThanOrEqualTo(DOCUMENT_ID, startKey)
           .whereLessThanOrEqualTo(DOCUMENT_ID, endKey)
