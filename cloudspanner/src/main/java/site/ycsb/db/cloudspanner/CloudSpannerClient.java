@@ -16,6 +16,7 @@
  */
 package site.ycsb.db.cloudspanner;
 
+import com.google.cloud.spanner.Type;
 import com.google.common.base.Joiner;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.DatabaseClient;
@@ -32,12 +33,15 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.TimestampBound;
+
+import site.ycsb.ByteArrayByteIterator;
 import site.ycsb.ByteIterator;
 import site.ycsb.Client;
 import site.ycsb.DB;
 import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
+import site.ycsb.Utils;
 import site.ycsb.workloads.CoreWorkload;
 
 import java.util.ArrayList;
@@ -434,7 +438,12 @@ public class CloudSpannerClient extends DB {
       Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
       m.set(primaryKeyColumn).to(key);
       for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
-        m.set(e.getKey()).to(e.getValue().toString());
+        if (e.getValue() instanceof StringByteIterator) {
+          m.set(e.getKey()).to(e.getValue().toString());
+        } else if (e.getValue().bytesLeft() == 16) {
+          // Assume this is a long.
+          m.set(e.getKey()).to(Utils.bytesToLong(e.getValue().toArray()));
+        }
       }
       bufferedMutations.add(m.build());
     } else {
@@ -482,15 +491,15 @@ public class CloudSpannerClient extends DB {
                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     String filterClause = "WHERE startTime";
     if (startRange != null && endRange != null) {
-      filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
+      filterClause = filterClause.concat(" BETWEEN ").concat(startRange).concat(" AND ").concat(endRange)
           .concat(" ORDER BY jobId").concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (startRange != null) {
-      filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY jobId")
+      filterClause = filterClause.concat(" >= ").concat(startRange).concat(" ORDER BY jobId")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (endRange != null) {
-      filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY jobId")
+      filterClause = filterClause.concat(" <= ").concat(endRange).concat(" ORDER BY jobId")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else {
@@ -508,15 +517,15 @@ public class CloudSpannerClient extends DB {
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     String filterClause = "WHERE entityPathKey";
     if (startKey != null && endKey != null) {
-      filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
-          .concat(" ORDER BY entityPathKey").concat(" LIMIT ").concat(Integer.toString(recordCount));
+      filterClause = filterClause.concat(" BETWEEN '").concat(startKey).concat("' AND '").concat(endKey)
+          .concat("' ORDER BY entityPathKey").concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (startKey != null) {
-      filterClause.concat(" >= ").concat(startKey).concat(" ORDER BY entityPathKey")
+      filterClause = filterClause.concat(" >= '").concat(startKey).concat("' ORDER BY entityPathKey")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else if (endKey != null) {
-      filterClause.concat(" <= ").concat(endKey).concat(" ORDER BY entityPathKey")
+      filterClause = filterClause.concat(" <= '").concat(endKey).concat("' ORDER BY entityPathKey")
           .concat(" LIMIT ").concat(Integer.toString(recordCount));
 
     } else {
@@ -554,7 +563,16 @@ public class CloudSpannerClient extends DB {
   private static void decodeStruct(
       Iterable<String> columns, StructReader structReader, Map<String, ByteIterator> result) {
     for (String col : columns) {
-      result.put(col, new StringByteIterator(structReader.getString(col)));
+      final ByteIterator cell;
+      final Type type = structReader.getColumnType(col);
+      if (type.equals(Type.bytes())) {
+        cell = new ByteArrayByteIterator(structReader.getBytes(col).toByteArray());
+      } else if (type.equals(Type.int64())) {
+        cell = new ByteArrayByteIterator(Utils.longToBytes(structReader.getLong(col)));
+      } else {
+        cell = new StringByteIterator(structReader.getString(col));
+      }
+      result.put(col, cell);
     }
   }
 }
