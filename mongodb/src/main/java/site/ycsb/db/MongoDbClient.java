@@ -377,12 +377,21 @@ public class MongoDbClient extends DB {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
 
-      Document scanRange = new Document("$gte", startkey);
-      Document query = new Document("_id", scanRange);
+      final Document query;
+      if (startkey != null) {
+        final Document scanRange = new Document("$gte", startkey);
+        query = new Document("_id", scanRange);
+      } else {
+        query = null;
+      }
       Document sort = new Document("_id", INCLUDE);
 
-      FindIterable<Document> findIterable =
-          collection.find(query).sort(sort).limit(recordcount);
+      final FindIterable<Document> findIterable;
+      if (query != null) {
+        findIterable = collection.find(query).sort(sort).limit(recordcount);
+      } else {
+        findIterable = collection.find().sort(sort).limit(recordcount);
+      }
 
       if (fields != null) {
         Document projection = new Document();
