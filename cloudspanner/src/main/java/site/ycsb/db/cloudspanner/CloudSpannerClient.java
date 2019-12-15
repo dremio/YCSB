@@ -513,6 +513,12 @@ public class CloudSpannerClient extends DB {
   public Status scanWithNamespaceKeyFilter(String table, String startKey, String endKey, int recordCount,
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     String filterClause = "WHERE entityPathKey";
+    if (startKey != null) {
+      startKey = startKey.replace('/', '_');
+    }
+    if (endKey != null) {
+      endKey = endKey.replace('/', '_');
+    }
     if (startKey != null && endKey != null) {
       filterClause = filterClause.concat(" BETWEEN ").concat(startKey).concat(" AND ").concat(endKey)
           .concat(" ORDER BY entityPathKey").concat(" LIMIT ").concat(Integer.toString(recordCount));
