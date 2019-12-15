@@ -114,6 +114,8 @@ public class CloudSpannerClient extends DB {
 
   private static String standardScan;
 
+  private static String standardScanNoStartKey;
+
   private static final ArrayList<String> STANDARD_FIELDS = new ArrayList<>();
 
   private static final String JOBS_TABLE_NAME = "jobs";
@@ -174,6 +176,8 @@ public class CloudSpannerClient extends DB {
         .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
+    standardScanNoStartKey = new StringBuilder()
+        .append("SELECT * FROM ").append(table).append(" LIMIT @count").toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
@@ -309,18 +313,32 @@ public class CloudSpannerClient extends DB {
     Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
     Statement query;
     if (fields == null || fields.size() == fieldCount) {
-      query = Statement.newBuilder(standardScan).bind("startKey").to(startKey).bind("count").to(recordCount).build();
+      if (startKey != null) {
+        query = Statement.newBuilder(standardScan).bind("startKey").to(startKey).bind("count").to(recordCount).build();
+      } else {
+        query = Statement.newBuilder(standardScanNoStartKey).bind("count").to(recordCount).build();
+      }
     } else {
       Joiner joiner = Joiner.on(',');
-      query = Statement.newBuilder("SELECT ")
+      Statement.Builder statementBuilder = Statement.newBuilder("SELECT ")
           .append(joiner.join(fields))
           .append(" FROM ")
-          .append(table)
-          .append(" WHERE id>=@startKey LIMIT @count")
-          .bind("startKey").to(startKey)
-          .bind("count").to(recordCount)
-          .build();
+          .append(table);
+
+      if (startKey != null) {
+        query = statementBuilder
+            .append(" WHERE id>=@startKey LIMIT @count")
+            .bind("startKey").to(startKey)
+            .bind("count").to(recordCount)
+            .build();
+      } else {
+        query = statementBuilder
+            .append(" LIMIT @count")
+            .bind("count").to(recordCount)
+            .build();
+      }
     }
+
     try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
       while (resultSet.next()) {
         HashMap<String, ByteIterator> row = new HashMap<>();
