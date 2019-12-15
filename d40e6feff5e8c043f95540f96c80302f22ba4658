@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d898f2b8_eb72ecec",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-15T02:15:43Z",
+      "side": 1,
+      "message": "Typo here in the method name.",
+      "revId": "d40e6feff5e8c043f95540f96c80302f22ba4658",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "777d61ee_0149510c",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-15T02:15:43Z",
+      "side": 1,
+      "message": "Nit: extra newline",
+      "revId": "d40e6feff5e8c043f95540f96c80302f22ba4658",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23a94ba5_b1d31b90",
+        "filename": "core/src/main/java/site/ycsb/DBWrapper.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 303,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-15T02:15:43Z",
+      "side": 1,
+      "message": "Can we use startTime and endTime instead of the abbreviations for clarity?",
+      "revId": "d40e6feff5e8c043f95540f96c80302f22ba4658",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
