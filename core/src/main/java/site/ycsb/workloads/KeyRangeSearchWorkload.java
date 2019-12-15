@@ -38,7 +38,7 @@ public class KeyRangeSearchWorkload extends Workload {
     final Status status;
     long startTime = System.nanoTime();
     final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
-    status = db.scanWithNamespaceKeyFilter("dac_namespace", "/mysource", "/mysource/schema/table10/file30.txt",50, null, result);
+    status = db.scanWithNamespaceKeyFilter("dac_namespace", "/mysource", "/mysource/schema/table9/file30.txt",50, null, result);
     long endTime = System.nanoTime();
     if (result.size() < 50) {
       return false;

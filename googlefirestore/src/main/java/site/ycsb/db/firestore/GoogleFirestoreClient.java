@@ -246,7 +246,8 @@ public class GoogleFirestoreClient extends DB {
     Query query;
     if (startRange != null && endRange != null) {
       query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
-          .whereLessThanOrEqualTo("", endRange).limit(recordCount);
+          .whereLessThanOrEqualTo("startTime", endRange)
+          .limit(recordCount);
     } else if (startRange != null) {
       query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
           .limit(recordCount);
@@ -272,15 +273,23 @@ public class GoogleFirestoreClient extends DB {
     if (endKey != null) {
       endKey = endKey.replace('/', '_');
     }
+//    System.out.println("startKey:"+ startKey);
+//    System.out.println("endKey:"+ endKey);
     if (startKey != null && endKey != null) {
-      query = fsDb.collection(table).whereGreaterThanOrEqualTo(DOCUMENT_ID, startKey)
-          .whereLessThanOrEqualTo(DOCUMENT_ID, endKey)
+      query = fsDb.collection(table)
+          .orderBy(DOCUMENT_ID)
+          .startAt(startKey)
+          .endAt(endKey)
           .limit(recordCount);
     } else if (startKey != null) {
-      query = fsDb.collection(table).whereGreaterThanOrEqualTo(DOCUMENT_ID, startKey)
+      query = fsDb.collection(table)
+          .orderBy(DOCUMENT_ID)
+          .startAt(startKey)
           .limit(recordCount);
     } else if (endKey != null) {
-      query = fsDb.collection(table).whereLessThanOrEqualTo(DOCUMENT_ID, endKey)
+      query = fsDb.collection(table)
+          .orderBy(DOCUMENT_ID)
+          .endAt(endKey)
           .limit(recordCount);
     } else {
       LOGGER.error("No valid range is provided");
@@ -297,7 +306,12 @@ public class GoogleFirestoreClient extends DB {
                                       String operationName) {
     try {
       QuerySnapshot querySs = query.get().get();
+/*      System.out.println("querySs:"+ querySs);
+      System.out.println("querySs.getDocuments:"+ querySs.getDocuments());
+      System.out.println("querySs.getDocuments.size:"+ querySs.getDocuments().size());
+      System.out.println("querySs.getQuery:"+ querySs.getQuery().toString()); */
       for (DocumentSnapshot docSs : querySs.getDocuments()) {
+//        docSs.getId();
         HashMap<String, ByteIterator> scanres = new HashMap<>();
         parseFields(fields, docSs, scanres);
         result.add(scanres);
@@ -319,9 +333,10 @@ public class GoogleFirestoreClient extends DB {
 
   private void parseFields(
       Set<String> fields, DocumentSnapshot docSs, Map<String, ByteIterator> result) {
-    Set<String> docFields = fields == null ? docSs.getData().keySet() : fields;
+    Map<String, Object> data = docSs.getData();
+    Set<String> docFields = fields == null ? data.keySet() : fields;
     for (String field : docFields) {
-      String value = docSs.getString(field);
+      String value = data.get(field).toString();
       result.put(field, new StringByteIterator(value));
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("parse: field: " + field + " value: " + value);
