@@ -259,8 +259,12 @@ public class MongoDbClient extends DB {
       Document toInsert = new Document("_id", key);
 
       if(table.equals("jobs")) {
-        String jobResult = values.get("jobResult").toString();
-        collection.insertOne(Document.parse(jobResult));
+        // Convert to JSON string and map jobId fields to _id.
+        String jobResult = new String(values.get("jobResult").toArray());
+        toInsert = Document.parse(jobResult);
+        toInsert.remove("jobId");
+        toInsert.put("_id", key);
+        collection.insertOne(toInsert);
         return Status.OK;
 
       } else {
@@ -483,13 +487,13 @@ public class MongoDbClient extends DB {
                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     Document query;
     if (startRange != null && endRange != null) {
-      query = new Document("jobInfo.startTime", new Document("$gte", startRange).append("$lte", endRange));
+      query = new Document("jobInfo.startTime", new Document("$gte", Integer.valueOf(startRange)).append("$lte", Integer.valueOf(endRange)));
 
     } else if (startRange != null) {
-      query = new Document("jobInfo.startTime", new Document("$gte", startRange));
+      query = new Document("jobInfo.startTime", new Document("$gte", Integer.valueOf(startRange)));
 
     } else if (endRange != null) {
-      query = new Document("jobInfo.startTime", new Document("$lte", endRange));
+      query = new Document("jobInfo.startTime", new Document("$lte", Integer.valueOf(endRange)));
 
     } else {
       System.err.println("No valid range is provided");
@@ -505,13 +509,13 @@ public class MongoDbClient extends DB {
                                            Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     Document query;
     if (startKey != null && endKey != null) {
-      query = new Document("pathKey", new Document("$gte", startKey).append("$lte", endKey));
+      query = new Document("_id", new Document("$gte", startKey).append("$lte", endKey));
 
     } else if (startKey != null) {
-      query = new Document("pathKey", new Document("$gte", startKey));
+      query = new Document("_id", new Document("$gte", startKey));
 
     } else if (endKey != null) {
-      query = new Document("pathKey", new Document("$lte", endKey));
+      query = new Document("_id", new Document("$lte", endKey));
 
     } else {
       System.err.println("No valid range is provided");
