@@ -22,6 +22,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
@@ -34,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -58,6 +60,8 @@ public class GoogleFirestoreClient extends DB {
   private static final Logger LOGGER = Logger.getLogger(GoogleFirestoreClient.class);
 
   private static final String DOCUMENT_ID = "__name__";
+
+  private static final int PAGINATION_COUNT_PER_CALL = 1000;
 
   private Firestore fsDb;
 
@@ -127,28 +131,42 @@ public class GoogleFirestoreClient extends DB {
     if (startkey != null) {
       query = query.startAt(startkey);
     }
-    query = query.limit(recordcount);
 
-    try {
-      QuerySnapshot querySs = query.get().get();
-      for (DocumentSnapshot docSs : querySs.getDocuments()) {
-        HashMap<String, ByteIterator> scanres = new HashMap<>();
-        parseFields(fields, docSs, scanres);
-        result.add(scanres);
-      }
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("scan: " + startkey + " : " + recordcount);
-      }
-      return Status.OK;
+    int count = 0;
+    query = query.limit(PAGINATION_COUNT_PER_CALL);
+    while (count <= recordcount) {
+      try {
+        QuerySnapshot querySs = query.get().get();
+        List<QueryDocumentSnapshot> snapshots = querySs.getDocuments();
 
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      LOGGER.error("Interrupted during scan().", e);
-      return Status.ERROR;
-    } catch (ExecutionException e) {
-      LOGGER.error("Error during scan().", e);
-      return Status.ERROR;
+        for (QueryDocumentSnapshot docSs : querySs.getDocuments()) {
+          HashMap<String, ByteIterator> scanres = new HashMap<>();
+          parseFields(fields, docSs, scanres);
+          result.add(scanres);
+        }
+
+        QueryDocumentSnapshot lastDoc = snapshots.get(snapshots.size() - 1);
+
+        query = fsDb.collection(table)
+            .orderBy(DOCUMENT_ID)
+            .startAt(lastDoc)
+            .limit(PAGINATION_COUNT_PER_CALL);
+
+        count += PAGINATION_COUNT_PER_CALL;
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        LOGGER.error("Interrupted during scan().", e);
+        return Status.ERROR;
+      } catch (ExecutionException e) {
+        LOGGER.error("Error during scan().", e);
+        return Status.ERROR;
+      }
     }
+
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("scan: " + startkey + " : " + recordcount);
+    }
+    return Status.OK;
   }
 
   @Override
