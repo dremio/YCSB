@@ -245,14 +245,20 @@ public class GoogleFirestoreClient extends DB {
                                           Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     Query query;
     if (startRange != null && endRange != null) {
-      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
-          .whereLessThanOrEqualTo("startTime", endRange)
+      query = fsDb.collection(table)
+          .orderBy("jobInfo.startTime")
+          .whereGreaterThanOrEqualTo("jobInfo.startTime", Integer.valueOf(startRange))
+          .whereLessThanOrEqualTo("jobInfo.startTime", Integer.valueOf(endRange))
           .limit(recordCount);
     } else if (startRange != null) {
-      query = fsDb.collection(table).whereGreaterThanOrEqualTo("startTime", startRange)
+      query = fsDb.collection(table)
+          .orderBy("jobInfo.startTime")
+          .whereGreaterThanOrEqualTo("jobInfo.startTime", Integer.valueOf(startRange))
           .limit(recordCount);
     } else if (endRange != null) {
-      query = fsDb.collection(table).whereLessThanOrEqualTo("startTime", endRange)
+      query = fsDb.collection(table)
+          .orderBy("jobInfo.startTime")
+          .whereLessThanOrEqualTo("jobInfo.startTime", Integer.valueOf(endRange))
           .limit(recordCount);
     } else {
       LOGGER.error("No valid range is provided");
