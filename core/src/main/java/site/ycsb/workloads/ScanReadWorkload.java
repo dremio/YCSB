@@ -85,8 +85,8 @@ public class ScanReadWorkload extends Workload {
     if (counter.count < 4) {
       counter.count++;
       final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
-      status = db.scan("jobs", null, 100000, null, result);
-      if (result.size() < 100000) {
+      status = db.scan("jobs", null, 10000, null, result);
+      if (result.size() < 10000) {
         return false;
       }
     } else {
