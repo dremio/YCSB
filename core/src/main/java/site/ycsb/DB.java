@@ -23,6 +23,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
+import javafx.util.Pair;
+
 /**
  * A layer for accessing a database to be benchmarked. Each thread in the client
  * will be given its own instance of whatever DB class is to be used in the test.
@@ -112,6 +114,22 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status update(String table, String key, Map<String, ByteIterator> values);
+
+  /**
+   * Finds a record by the specific query and version and updates it.
+   * Any field/value pairs in the specified values HashMap will be written
+   * into the record with the specified record key, overwriting any existing
+   * values with the same field name.
+   *
+   * @param table   The name of the table
+   * @param key     The record key of the record to write.
+   * @param version The version to update to
+   * @param values  A HashMap of field/value pairs to update in the record
+   * @return The result of the operation.
+   */
+  public Pair<Status, Object> findAndUpdate(String table, String key, int version, Map<String, ByteIterator> values) {
+    return null;
+  }
 
   /**
    * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the
