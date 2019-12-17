@@ -38,4 +38,4 @@ cloudspanner.instance=spandb1
 cloudspanner.database=ycsb-db
 googlefirestore.projectId=dremio-1093
 googlefirestore.serviceAccountKey=/data/YCSB/dremio-1093-35f8d759f1ba.json
-mongodb.url=mongodb+srv://dremio:dremio123@cluster-lk5uu.gcp.mongodb.net/dremio-performance-sharded?retryWrites=true&w=majority
+mongodb.url=mongodb+srv://dremio:dremio123@cluster0-lk5uu.gcp.mongodb.net/dremio-performance-sharded?retryWrites=true&w=majority
