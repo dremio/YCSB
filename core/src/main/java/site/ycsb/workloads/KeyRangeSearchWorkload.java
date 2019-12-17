@@ -16,31 +16,62 @@
 package site.ycsb.workloads;
 
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.Vector;
 
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
 import site.ycsb.Status;
 import site.ycsb.Workload;
+import site.ycsb.WorkloadException;
 import site.ycsb.measurements.Measurements;
 
 /**
  * Scenario 4 of the Dremio performance test.
  */
 public class KeyRangeSearchWorkload extends Workload {
+
+  private int operationCount;
+  private int recordCount;
+
   @Override
-  public boolean doInsert(DB db, Object threadstate) {
+  public void init(Properties p) throws WorkloadException {
+    operationCount = Integer.parseInt(p.getProperty("operationcount"));
+    recordCount = Integer.parseInt(p.getProperty("recordcount"));
+  }
+
+  private static class ThreadOffset {
+    public int start;
+    public int count;
+
+    public ThreadOffset(int threadId, int threadCount, int operationCount) {
+      this.start = (threadId) * (operationCount/threadCount);
+    }
+  }
+
+  public Object initThread(Properties p, int myThreadId, int threadCount) throws WorkloadException {
+    return new ThreadOffset(myThreadId, threadCount, this.operationCount);
+  }
+
+  @Override
+  public boolean doInsert(DB db, Object threadState) {
     return true;
   }
 
   @Override
-  public boolean doTransaction(DB db, Object threadstate) {
+  public boolean doTransaction(DB db, Object threadState) {
+    final ThreadOffset threadOffset = (ThreadOffset) threadState;
     final Status status;
-    long startTime = System.nanoTime();
     final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
-    status = db.scanWithNamespaceKeyFilter("dac_namespace", "/mysource", "/mysource/schema/table9/file30.txt",50, null, result);
+    final String startKey =  String.format("/mysource%s", (threadOffset.start + threadOffset.count));
+    final String endKey =  String.format("/mysource%s/schema/table9/file30.txt", (threadOffset.start + threadOffset.count));
+
+    long startTime = System.nanoTime();
+    status = db.scanWithNamespaceKeyFilter("dac_namespace", startKey, endKey, recordCount, null, result);
     long endTime = System.nanoTime();
-    if (result.size() < 50) {
+    threadOffset.count++;
+
+    if (result.size() < recordCount) {
       return false;
     }
     Measurements.getMeasurements().measure("KEY_RANGE_SEARCH", (int) (endTime - startTime) / 1000);
