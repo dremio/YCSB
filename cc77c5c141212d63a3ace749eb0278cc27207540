@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c4a16e71_96ca98f7",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T21:34:12Z",
+      "side": 1,
+      "message": "No need to make these static.",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bb94f8e3_08117814",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T21:34:12Z",
+      "side": 1,
+      "message": "Why make the limit configurable now instead of hard-coded to 50?",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "83de110e_bb40492a",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T21:34:12Z",
+      "side": 1,
+      "message": "This should be 1000, not operation count (it\u0027s for converting the time unit not getting an average).",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "70819fdf_fb6cec90",
+        "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T21:34:12Z",
+      "side": 1,
+      "message": "No need for these to be static.",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fb206afd_95889c74",
+        "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T21:34:12Z",
+      "side": 1,
+      "message": "Why make the limit not hard-coded to 50?",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    }
+  ]
+}
