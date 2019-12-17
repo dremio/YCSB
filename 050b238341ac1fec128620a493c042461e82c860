@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a0a53686_26d35134",
+        "filename": "core/src/main/java/site/ycsb/workloads/PutGetWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T18:28:09Z",
+      "side": 1,
+      "message": "As discussed, we can\u0027t use the ObjectId (or other auto-generated _id values) for this scenario and scenarios other than bulk scan.\n\nThe issue is that if the value is auto-generated, the test can\u0027t know what value was inserted without querying the database.",
+      "parentUuid": "2190279c_73727e6d",
+      "revId": "050b238341ac1fec128620a493c042461e82c860",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a068d563_d94d4370",
         "filename": "workloads/workload_putget",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-12-17T17:48:14Z",
       "side": 1,
       "message": "Do we care about all the extra whitespace here?",
+      "revId": "050b238341ac1fec128620a493c042461e82c860",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e39e12a_0ec29e24",
+        "filename": "workloads/workload_putget",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2019-12-17T18:28:09Z",
+      "side": 1,
+      "message": "I\u0027d say not. This is just from YCSB\u0027s original source files.",
+      "parentUuid": "a068d563_d94d4370",
       "revId": "050b238341ac1fec128620a493c042461e82c860",
       "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
       "unresolved": true
