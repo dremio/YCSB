@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c31e9731_398566b1",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-17T21:58:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c4a16e71_96ca98f7",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bb94f8e3_08117814",
         "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-12-17T21:34:12Z",
       "side": 1,
       "message": "Why make the limit configurable now instead of hard-coded to 50?",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6c51c8ec_74cb5f8b",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-17T21:58:18Z",
+      "side": 1,
+      "message": "I feel like it makes more sense to pass recordcount via the command line, rather than editing it in the file. Keeping it for now.\nI will update the scripts that run these tests.",
+      "parentUuid": "bb94f8e3_08117814",
       "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
       "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "ef482053_2ccad32a",
+        "filename": "core/src/main/java/site/ycsb/workloads/KeyRangeSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-17T21:58:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "83de110e_bb40492a",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "70819fdf_fb6cec90",
         "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "218681e7_95011e63",
+        "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-17T21:58:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70819fdf_fb6cec90",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fb206afd_95889c74",
         "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2019-12-17T21:34:12Z",
       "side": 1,
       "message": "Why make the limit not hard-coded to 50?",
+      "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "18078bf9_14fa3fa4",
+        "filename": "core/src/main/java/site/ycsb/workloads/SecondaryIndexSearchWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-17T21:58:18Z",
+      "side": 1,
+      "message": "Replied, in the other comment.",
+      "parentUuid": "fb206afd_95889c74",
       "revId": "cc77c5c141212d63a3ace749eb0278cc27207540",
       "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
       "unresolved": false
