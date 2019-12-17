@@ -301,7 +301,7 @@ public class CloudSpannerClient extends DB {
     if (queriesForReads) {
       return readUsingQuery(table, key, fields, result);
     }
-    Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
+    Iterable<String> columns = fields == null ? JOBS_FIELDS : fields;
     try {
       Struct row = dbClient.singleUse(timestampBound).readRow(table, Key.of(key), columns);
       decodeStruct(columns, row, result);
@@ -315,7 +315,7 @@ public class CloudSpannerClient extends DB {
   private Status scanUsingQuery(
       String table, String startKey, int recordCount, Set<String> fields,
       Vector<HashMap<String, ByteIterator>> result) {
-    Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
+    Iterable<String> columns = fields == null ? JOBS_FIELDS : fields;
     Statement query;
     if (fields == null || fields.size() == fieldCount) {
       if (startKey != null) {
@@ -332,7 +332,7 @@ public class CloudSpannerClient extends DB {
 
       if (startKey != null) {
         query = statementBuilder
-            .append(" WHERE id>=@startKey LIMIT @count")
+            .append(" WHERE jobId>=@startKey LIMIT @count")
             .bind("startKey").to(startKey)
             .bind("count").to(recordCount)
             .build();
