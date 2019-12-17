@@ -32,7 +32,9 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
@@ -43,6 +45,7 @@ import site.ycsb.ByteArrayByteIterator;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
 import site.ycsb.DBException;
+import site.ycsb.Pair;
 import site.ycsb.Status;
 
 import org.bson.Document;
@@ -479,6 +482,40 @@ public class MongoDbClient extends DB {
     } catch (Exception e) {
       System.err.println(e.toString());
       return Status.ERROR;
+    }
+  }
+
+  @Override
+  public Pair findAndUpdate(String table, String key,
+                            Object version,
+                            Map<String, ByteIterator> values) {
+    try {
+      MongoCollection<Document> collection = database.getCollection(table);
+      Document query = new Document("_id", key).append("version", version);
+      Document fieldsToSet = new Document();
+      Long versionToUpdateFrom = (Long) version;
+
+      //MongoDB client will only update jobState (top level) field when updating jobs collection
+      if(table.equals("jobs")) {
+        ByteIterator jobState = values.get("jobState");
+        fieldsToSet.put("jobState", jobState.toArray());
+
+      } else {
+        for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+          fieldsToSet.put(entry.getKey(), entry.getValue().toArray());
+        }
+      }
+      Document update = new Document("$set", fieldsToSet)
+          .append("$inc", (versionToUpdateFrom+1));
+
+      FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
+      options.returnDocument(ReturnDocument.AFTER);
+
+      Document result = collection.findOneAndUpdate(query, update, options);
+      return new Pair(Status.OK, result.get("version"));
+    } catch (Exception e) {
+      System.err.println(e.toString());
+      return new Pair(Status.ERROR, version);
     }
   }
 
