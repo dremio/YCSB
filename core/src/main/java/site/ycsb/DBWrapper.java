@@ -18,6 +18,8 @@
 package site.ycsb;
 
 import java.util.Map;
+
+import javafx.util.Pair;
 import site.ycsb.measurements.Measurements;
 import org.apache.htrace.core.TraceScope;
 import org.apache.htrace.core.Tracer;
@@ -48,6 +50,7 @@ public class DBWrapper extends DB {
   private final String scopeStringRead;
   private final String scopeStringScan;
   private final String scopeStringUpdate;
+  private final String scopeStringVersionedUpdate;
   private final String scopeStringScanWithCreatedTimeFilter;
   private final String scopeStringScanWithNamespaceKeyFilter;
 
@@ -63,6 +66,7 @@ public class DBWrapper extends DB {
     scopeStringRead = simple + "#read";
     scopeStringScan = simple + "#scan";
     scopeStringUpdate = simple + "#update";
+    scopeStringVersionedUpdate = simple + "#versioned_update";
     scopeStringScanWithCreatedTimeFilter = simple +
         "#scan_with_created_time_filter";
     scopeStringScanWithNamespaceKeyFilter = simple +
@@ -206,6 +210,33 @@ public class DBWrapper extends DB {
       measure("UPDATE", res, ist, st, en);
       measurements.reportStatus("UPDATE", res);
       return res;
+    }
+  }
+
+  /**
+   * Finds a record by the specific query and version and updates it.
+   * Any field/value pairs in the specified values HashMap will be written
+   * into the record with the specified record key, overwriting any existing
+   * values with the same field name.
+   *
+   * @param table   The name of the table
+   * @param key     The record key of the record to write.
+   * @param version The version to update to
+   * @param values  A HashMap of field/value pairs to update in the record
+   * @return The result of the operation.
+   */
+  public Pair<Status, Object> findAndUpdate(
+      String table, String key,
+      Object version, Map<String, ByteIterator> values) {
+    try (final TraceScope span = tracer.newScope(scopeStringVersionedUpdate)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st = System.nanoTime();
+      Pair<Status, Object> statusVersionPair = db.findAndUpdate(table, key, version, values);
+      Status res = statusVersionPair.getKey();
+      long en = System.nanoTime();
+      measure("VERSIONED_UPDATE", res, ist, st, en);
+      measurements.reportStatus("VERSIONED_UPDATE", res);
+      return new Pair<>(res, statusVersionPair.getValue());
     }
   }
 
