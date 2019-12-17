@@ -177,11 +177,11 @@ public class CloudSpannerClient extends DB {
     final String fieldprefix = properties.getProperty(CoreWorkload.FIELD_NAME_PREFIX,
                                                       CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
     standardQuery = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
+        .append("SELECT * FROM ").append("jobs").append(" WHERE jobId=@key").toString();
     standardScan = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
+        .append("SELECT * FROM ").append("jobs").append(" WHERE jobId>=@startKey LIMIT @count").toString();
     standardScanNoStartKey = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" LIMIT @count").toString();
+        .append("SELECT * FROM ").append("jobs").append(" LIMIT @count").toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
