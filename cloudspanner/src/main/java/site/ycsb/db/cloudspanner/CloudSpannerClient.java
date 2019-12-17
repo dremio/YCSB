@@ -177,11 +177,11 @@ public class CloudSpannerClient extends DB {
     final String fieldprefix = properties.getProperty(CoreWorkload.FIELD_NAME_PREFIX,
                                                       CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
     standardQuery = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
+        .append("SELECT * FROM ").append("jobs").append(" WHERE jobId=@key").toString();
     standardScan = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
+        .append("SELECT * FROM ").append("jobs").append(" WHERE jobId>=@startKey LIMIT @count").toString();
     standardScanNoStartKey = new StringBuilder()
-        .append("SELECT * FROM ").append(table).append(" LIMIT @count").toString();
+        .append("SELECT * FROM ").append("jobs").append(" LIMIT @count").toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
@@ -267,7 +267,7 @@ public class CloudSpannerClient extends DB {
   private Status readUsingQuery(
       String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     Statement query;
-    Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
+    Iterable<String> columns = fields == null ? JOBS_FIELDS : fields;
     if (fields == null || fields.size() == fieldCount) {
       query = Statement.newBuilder(standardQuery).bind("key").to(key).build();
     } else {
@@ -276,7 +276,7 @@ public class CloudSpannerClient extends DB {
           .append(joiner.join(fields))
           .append(" FROM ")
           .append(table)
-          .append(" WHERE id=@key")
+          .append(" WHERE jobs=@key")
           .bind("key").to(key)
           .build();
     }

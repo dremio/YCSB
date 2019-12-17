@@ -17,11 +17,11 @@ package site.ycsb.workloads;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -35,9 +35,9 @@ import site.ycsb.Workload;
 import site.ycsb.WorkloadException;
 
 /**
- * Scenario 1 of the Dremio performance test.
+ * A workload where we do 80% inserts and 20% gets of the inserted data
  */
-public class ScanReadWorkload extends Workload {
+public class PutGetWorkload extends Workload {
 
   private static Map<String, ByteIterator> makeRowFromTemplate() {
     final Map<String, ByteIterator> rowTemplate = new HashMap<>();
@@ -64,42 +64,43 @@ public class ScanReadWorkload extends Workload {
     return rowTemplate;
   }
 
-  private static class Counter {
-    public int count;
+  private static class UuidTracker {
+    public List<String> insertedValues = new ArrayList<>();
+    public Random putGetRng;
+    public Random insertedValueIndexRng;
   }
 
   public Object initThread(Properties p, int mythreadid, int threadcount) throws WorkloadException {
-    return new Counter();
+    UuidTracker tracker = new UuidTracker();
+    tracker.putGetRng = new Random(mythreadid);
+    tracker.insertedValueIndexRng = new Random(mythreadid);
+    return tracker;
   }
 
   @Override
   public boolean doInsert(DB db, Object threadstate) {
-    // No-op implementation because data should be loaded in the KV-store in advance.
+    insertRow(db, (UuidTracker) threadstate);
     return true;
   }
 
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
-    final Counter counter = (Counter) threadstate;
-    final Status status;
-    if (counter.count < 4) {
-      counter.count++;
-      final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
-      status = db.scan("jobs", null, 100000, null, result);
-      if (result.size() < 100000) {
-        return false;
-      }
+    // randomly choose to do an insert or get with 80% probability of an insert, 20% probability of get.
+    UuidTracker tracker = (UuidTracker) threadstate;
+    if (tracker.putGetRng.nextInt(100) < 80) {
+      return insertRow(db, tracker).isOk();
     } else {
-      counter.count = 0;
-      status = insertRow(db);
+      // select a random entry in the list of known values.
+      int element = tracker.insertedValueIndexRng.nextInt(tracker.insertedValues.size());
+      final HashMap<String, ByteIterator> result = new HashMap<>();
+      return db.read("jobs", tracker.insertedValues.get(element), null, result).isOk();
     }
-
-    return status.isOk();
   }
 
-  private Status insertRow(DB db) {
+  private Status insertRow(DB db, UuidTracker tracker) {
     final String newUuid = UUID.randomUUID().toString().toLowerCase();
     final Status status = db.insert("jobs", newUuid, makeRowFromTemplate());
+    tracker.insertedValues.add(newUuid);
     return status;
   }
 }
