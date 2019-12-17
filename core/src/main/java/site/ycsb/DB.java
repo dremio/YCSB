@@ -114,6 +114,24 @@ public abstract class DB {
   public abstract Status update(String table, String key, Map<String, ByteIterator> values);
 
   /**
+   * Finds a record by the specific query and version and updates it.
+   * Any field/value pairs in the specified values HashMap will be written
+   * into the record with the specified record key, overwriting any existing
+   * values with the same field name.
+   *
+   * @param table   The name of the table
+   * @param key     The record key of the record to write.
+   * @param version The version to update to
+   * @param values  A HashMap of field/value pairs to update in the record
+   * @return The result of the operation.
+   */
+  public Pair findAndUpdate(
+      String table, String key,
+      Object version, Map<String, ByteIterator> values) {
+    return null;
+  }
+
+  /**
    * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key.
    *

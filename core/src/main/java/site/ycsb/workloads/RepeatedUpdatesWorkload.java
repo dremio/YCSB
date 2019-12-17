@@ -15,11 +15,21 @@
  */
 package site.ycsb.workloads;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
+import site.ycsb.Pair;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
 import site.ycsb.Workload;
@@ -31,23 +41,30 @@ import site.ycsb.measurements.Measurements;
  */
 public class RepeatedUpdatesWorkload extends Workload {
 
-  // This array should expand if we want to test more threads working on distinct keys.
-  private static final String[] TEST_JOB_IDS = new String[]{
-      "bb2050d0-ee9a-4428-b6ad-09f43a0278c0",
-      "ca64ca01-e396-4ff5-8491-96e7dff473cf",
-      "0793a46e-7660-4613-b4cd-9fb1701b874d",
-      "e5bf1e6f-51c3-4c0d-a571-9db8fd60bca1",
-      "26642a82-17ef-4f02-b8fd-97be94ddb0a8"
-  };
+  private static final String JOB_IDS_FILE = "jobIds.json";
 
   private static class JobIdTracker {
-    public String jobId;
+    public List<String> jobIds;
   }
 
   @Override
   public Object initThread(Properties p, int mythreadid, int threadcount) throws WorkloadException {
     final JobIdTracker tracker = new JobIdTracker();
-    tracker.jobId = TEST_JOB_IDS[mythreadid % TEST_JOB_IDS.length];
+    JSONParser parser = new JSONParser();
+    FileReader reader = null;
+    try {
+      reader = new FileReader(JOB_IDS_FILE);
+      JSONObject jsonObject = (JSONObject) parser.parse(reader);
+      List<String> jobIds = new ArrayList<>();
+      JSONArray jobIdArray = (JSONArray) jsonObject.get(mythreadid);
+      for (Object o: jobIdArray) {
+        jobIds.add(o.toString());
+      }
+      tracker.jobIds = jobIds;
+      return tracker;
+    } catch (IOException  | ParseException e) {
+      e.printStackTrace();
+    }
     return tracker;
   }
 
@@ -63,9 +80,18 @@ public class RepeatedUpdatesWorkload extends Workload {
     final HashMap<String, ByteIterator> updatedValues = new HashMap<>();
     // JobStates are numeric values. Iterate through job states.
     Status status = Status.OK;
-    for (int i = 1; i <= 5 && status.isOk(); i++) {
-      updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
-      status = db.update("jobs", tracker.jobId, updatedValues);
+    Long version = null;
+
+    for (String jobId: tracker.jobIds) {
+      int i = 1;
+      while ((i <= 5) && (status.isOk())) {
+        updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
+        Pair statusVersionPair = db.findAndUpdate("jobs", jobId, version,
+            updatedValues);
+        version = (Long) statusVersionPair.getVersion();
+        status = statusVersionPair.getStatus();
+        i += 1;
+      }
     }
     final long endTime = System.nanoTime();
     Measurements.getMeasurements().measure("RAPID_UPDATE", (int) (endTime - startTime) / 1000);
