@@ -35,6 +35,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.TimestampBound;
 
+import javafx.util.Pair;
 import site.ycsb.ByteArrayByteIterator;
 import site.ycsb.ByteIterator;
 import site.ycsb.Client;
@@ -48,6 +49,7 @@ import site.ycsb.workloads.CoreWorkload;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -277,7 +279,7 @@ public class CloudSpannerClient extends DB {
           .append(joiner.join(fields))
           .append(" FROM ")
           .append(table)
-          .append(" WHERE jobs=@key")
+          .append(" WHERE jobId=@key")
           .bind("key").to(key)
           .build();
     }
@@ -410,7 +412,14 @@ public class CloudSpannerClient extends DB {
     Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
     m.set(primaryKeyColumn).to(key);
     for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
-      m.set(e.getKey()).to(e.getValue().toString());
+      if (e.getValue() instanceof StringByteIterator) {
+        m.set(e.getKey()).to(e.getValue().toString());
+      } else if (e.getValue().bytesLeft() == 8) { // size of long == 8 bytes
+        // Assume this is a long.
+        m.set(e.getKey()).to(Utils.bytesToLong(e.getValue().toArray()));
+      } else {
+        m.set(e.getKey()).to(ByteArray.copyFrom(e.getValue().toArray()));
+      }
     }
     try {
       dbClient.writeAtLeastOnce(Arrays.asList(m.build()));
@@ -419,6 +428,40 @@ public class CloudSpannerClient extends DB {
       return Status.ERROR;
     }
     return Status.OK;
+  }
+
+  @Override
+  public Pair<Status, Object> findAndUpdate(
+      String table, String key,
+      Object version, Map<String, ByteIterator> values) {
+    HashSet<String> versionReqFields = new HashSet<>();
+    HashMap<String, ByteIterator> versionValues = new HashMap<>();
+    versionReqFields.add("version");
+    Status readStatus = read(table, key, versionReqFields, versionValues);
+    if (!readStatus.isOk()) {
+      LOGGER.log(Level.SEVERE, "Unable to read() during findAndUpdate");
+      return new Pair<>(Status.ERROR, null);
+    }
+
+    ByteIterator versionByteIter = values.get("version");
+    ByteIterator nextVersionByteIter;
+    Long nextVersion;
+    if (versionByteIter == null) {
+      // No version defined in the data. Just generate the version.
+      nextVersion = 1L;
+    } else {
+      long currentVersion = Utils.bytesToLong(versionByteIter.toArray());
+      if (version != null && !version.equals(currentVersion)) {
+        // Version mismatch.
+        LOGGER.log(Level.SEVERE, "Version mismatch on findAndUpdate");
+        return new Pair<>(Status.ERROR, null);
+      }
+      nextVersion = currentVersion + 1;
+    }
+    nextVersionByteIter = new ByteArrayByteIterator(Utils.longToBytes(nextVersion));
+    values.put("version", nextVersionByteIter);
+    Status updateStatus = update(table, key, values);
+    return new Pair<>(updateStatus, nextVersion);
   }
 
   //Works with jobs and dac_namespace schema as well
@@ -568,14 +611,18 @@ public class CloudSpannerClient extends DB {
     for (String col : columns) {
       final ByteIterator cell;
       final Type type = structReader.getColumnType(col);
-      if (type.equals(Type.bytes())) {
-        cell = new ByteArrayByteIterator(structReader.getBytes(col).toByteArray());
-      } else if (type.equals(Type.int64())) {
-        cell = new ByteArrayByteIterator(Utils.longToBytes(structReader.getLong(col)));
+      if (!structReader.isNull(col)) {
+        result.put(col, null);
       } else {
-        cell = new StringByteIterator(structReader.getString(col));
+        if (type.equals(Type.bytes())) {
+          cell = new ByteArrayByteIterator(structReader.getBytes(col).toByteArray());
+        } else if (type.equals(Type.int64())) {
+          cell = new ByteArrayByteIterator(Utils.longToBytes(structReader.getLong(col)));
+        } else {
+          cell = new StringByteIterator(structReader.getString(col));
+        }
+        result.put(col, cell);
       }
-      result.put(col, cell);
     }
   }
 }
