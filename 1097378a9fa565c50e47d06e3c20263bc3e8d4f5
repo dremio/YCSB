@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "025536ea_9c0b808c",
+        "filename": "resources/ycsb-helper-scripts/README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000123
+      },
+      "writtenOn": "2019-12-18T21:24:24Z",
+      "side": 1,
+      "message": "whitespace at end",
+      "revId": "1097378a9fa565c50e47d06e3c20263bc3e8d4f5",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "65c1244f_729c21f9",
+        "filename": "resources/ycsb-helper-scripts/namespace_gen.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000123
+      },
+      "writtenOn": "2019-12-18T21:24:24Z",
+      "side": 1,
+      "message": "let\u0027s move all the faker initialization code to a separate file which can be called from there",
+      "revId": "1097378a9fa565c50e47d06e3c20263bc3e8d4f5",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98c2b500_d27aa751",
+        "filename": "resources/ycsb-helper-scripts/spanner_data_inserter.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000123
+      },
+      "writtenOn": "2019-12-18T21:24:24Z",
+      "side": 1,
+      "message": "make the batch size a parameter",
+      "revId": "1097378a9fa565c50e47d06e3c20263bc3e8d4f5",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
