@@ -15,8 +15,10 @@
  */
 package site.ycsb.workloads;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,13 +52,23 @@ public class RepeatedUpdatesWorkload extends Workload {
   @Override
   public Object initThread(Properties p, int mythreadid, int threadcount) throws WorkloadException {
     final JobIdTracker tracker = new JobIdTracker();
+    ClassLoader classLoader = getClass().getClassLoader();
+    final File file;
+
+    URL resource = classLoader.getResource(JOB_IDS_FILE);
+    if (resource == null) {
+      throw new IllegalArgumentException("file is not found!");
+    } else {
+      file = new File(resource.getFile());
+    }
     JSONParser parser = new JSONParser();
     FileReader reader = null;
     try {
-      reader = new FileReader(JOB_IDS_FILE);
+      reader = new FileReader(file);
       JSONObject jsonObject = (JSONObject) parser.parse(reader);
       List<String> jobIds = new ArrayList<>();
-      JSONArray jobIdArray = (JSONArray) jsonObject.get(mythreadid);
+      JSONArray jobIdArray =
+          (JSONArray) jsonObject.get(String.valueOf(mythreadid));
       for (Object o: jobIdArray) {
         jobIds.add(o.toString());
       }
