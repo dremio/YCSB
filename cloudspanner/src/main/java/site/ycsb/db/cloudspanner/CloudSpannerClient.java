@@ -445,7 +445,7 @@ public class CloudSpannerClient extends DB {
 
     ByteIterator versionByteIter = values.get("version");
     ByteIterator nextVersionByteIter;
-    Long nextVersion;
+    long nextVersion;
     if (versionByteIter == null) {
       // No version defined in the data. Just generate the version.
       nextVersion = 1L;
@@ -611,7 +611,7 @@ public class CloudSpannerClient extends DB {
     for (String col : columns) {
       final ByteIterator cell;
       final Type type = structReader.getColumnType(col);
-      if (!structReader.isNull(col)) {
+      if (structReader.isNull(col)) {
         result.put(col, null);
       } else {
         if (type.equals(Type.bytes())) {
