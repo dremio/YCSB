@@ -35,7 +35,7 @@ import site.ycsb.Workload;
 import site.ycsb.WorkloadException;
 
 /**
- * A workload where we do 80% inserts and 20% gets of the inserted data
+ * A workload where we do 20% inserts and 80% gets of the inserted data
  */
 public class PutGetWorkload extends Workload {
 
@@ -87,7 +87,7 @@ public class PutGetWorkload extends Workload {
   public boolean doTransaction(DB db, Object threadstate) {
     // randomly choose to do an insert or get with 80% probability of an insert, 20% probability of get.
     UuidTracker tracker = (UuidTracker) threadstate;
-    if (tracker.putGetRng.nextInt(100) < 80 || tracker.insertedValues.isEmpty()) {
+    if (tracker.putGetRng.nextInt(100) < 20 || tracker.insertedValues.isEmpty()) {
       return insertRow(db, tracker).isOk();
     } else {
       // select a random entry in the list of known values.
