@@ -38,6 +38,9 @@ import site.ycsb.WorkloadException;
  * Scenario 1 of the Dremio performance test.
  */
 public class ScanReadWorkload extends Workload {
+  private final static String[] START_KEYS = new String[] {
+
+  };
 
   private static Map<String, ByteIterator> makeRowFromTemplate() {
     final Map<String, ByteIterator> rowTemplate = new HashMap<>();
@@ -65,11 +68,14 @@ public class ScanReadWorkload extends Workload {
   }
 
   private static class Counter {
+    public String startKey;
     public int count;
   }
 
   public Object initThread(Properties p, int mythreadid, int threadcount) throws WorkloadException {
-    return new Counter();
+    Counter threadCounter = new Counter();
+    threadCounter.startKey = START_KEYS[mythreadid % START_KEYS.length];
+    return threadCounter;
   }
 
   @Override
@@ -85,7 +91,7 @@ public class ScanReadWorkload extends Workload {
     if (counter.count < 4) {
       counter.count++;
       final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
-      status = db.scan("jobs", null, 10000, null, result);
+      status = db.scan("jobs", counter.startKey, 10000, null, result);
       if (result.size() < 10000) {
         return false;
       }
