@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4c14550b_7c154a13",
+        "filename": "core/src/main/java/site/ycsb/workloads/RepeatedUpdatesWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-18T04:32:12Z",
+      "side": 1,
+      "message": "We should remove the else block and just declare and define the file variable on one line.",
+      "revId": "bc24d5bbce6ebfa66f13f9928eeb89ace8d1eeb8",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
