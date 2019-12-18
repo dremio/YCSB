@@ -16,6 +16,24 @@
       "revId": "bc24d5bbce6ebfa66f13f9928eeb89ace8d1eeb8",
       "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b79ab8a1_bbe86631",
+        "filename": "core/src/main/java/site/ycsb/workloads/RepeatedUpdatesWorkload.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1000123
+      },
+      "writtenOn": "2019-12-18T04:50:29Z",
+      "side": 1,
+      "message": "\u003e We should remove the else block and just declare and define the file variable on one line.\n\nI will do this differently, not load it from a file but just define the jsonString in place. Seems like this doesn\u0027t work when the jar is run",
+      "parentUuid": "4c14550b_7c154a13",
+      "revId": "bc24d5bbce6ebfa66f13f9928eeb89ace8d1eeb8",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
     }
   ]
 }
