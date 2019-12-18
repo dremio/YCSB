@@ -491,7 +491,10 @@ public class MongoDbClient extends DB {
                             Map<String, ByteIterator> values) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
-      Document query = new Document("_id", key).append("version", version);
+      Document query = new Document("_id", key);
+      if (version != null) {
+        query.append("version", version);
+      }
       Document fieldsToSet = new Document();
       Long versionToUpdateFrom = (Long) version;
 
@@ -504,8 +507,15 @@ public class MongoDbClient extends DB {
           fieldsToSet.put(entry.getKey(), entry.getValue().toArray());
         }
       }
-      Document update = new Document("$set", fieldsToSet)
-          .append("$inc", (versionToUpdateFrom+1));
+
+      if (version == null) {
+        fieldsToSet.put("version", 1);
+      }
+      Document update = new Document("$set", fieldsToSet);
+
+      if (version != null) {
+        update.append("$inc", (versionToUpdateFrom+1));
+      } 
 
       FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
       options.returnDocument(ReturnDocument.AFTER);
