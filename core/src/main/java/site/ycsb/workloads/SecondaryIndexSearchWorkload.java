@@ -48,14 +48,14 @@ public class SecondaryIndexSearchWorkload extends Workload {
 
     public ThreadOffset(int threadId) {
       /*
-          ThreadId 0: start=800, end=900
-          ThreadId 1: start=900, end=1000
+          ThreadId 0: start=0, end=25
+          ThreadId 1: start=25, end=50
           ...
           ...
-          ThreadId 9: start=1700, end=1800
+          ThreadId 49: start=1225, end=1250
       */
-      this.start = (8 + threadId) * 100;
-      this.end = this.start + 100;
+      this.start = threadId * 25;
+      this.end = this.start + 25;
     }
   }
 
