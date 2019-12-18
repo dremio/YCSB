@@ -73,25 +73,22 @@ public class RepeatedUpdatesWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     final JobIdTracker tracker = (JobIdTracker) threadstate;
-    final long startTime = System.nanoTime();
     final HashMap<String, ByteIterator> updatedValues = new HashMap<>();
     // JobStates are numeric values. Iterate through job states.
     Status status = Status.OK;
-    Long version = null;
 
     for (String jobId: tracker.jobIds) {
       int i = 1;
+      Integer version = null;
       while ((i <= 5) && (status.isOk())) {
         updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
         Pair statusVersionPair = db.findAndUpdate("jobs", jobId, version,
             updatedValues);
-        version = (Long) statusVersionPair.getVersion();
+        version = (Integer) statusVersionPair.getVersion();
         status = statusVersionPair.getStatus();
         i += 1;
       }
     }
-    final long endTime = System.nanoTime();
-    Measurements.getMeasurements().measure("RAPID_UPDATE", (int) (endTime - startTime) / 1000);
     return status.isOk();
   }
 
