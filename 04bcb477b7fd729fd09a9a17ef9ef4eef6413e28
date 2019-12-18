@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "17cf99dc_b842b277",
+        "filename": "mongodb/src/main/java/site/ycsb/db/MongoDbClient.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-18T05:47:35Z",
+      "side": 1,
+      "message": "Nit: space between if and (",
+      "revId": "04bcb477b7fd729fd09a9a17ef9ef4eef6413e28",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "75e2c4e3_ce318282",
+        "filename": "mongodb/src/main/java/site/ycsb/db/MongoDbClient.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1000034
+      },
+      "writtenOn": "2019-12-18T05:47:35Z",
+      "side": 1,
+      "message": "Extra newline",
+      "revId": "04bcb477b7fd729fd09a9a17ef9ef4eef6413e28",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
