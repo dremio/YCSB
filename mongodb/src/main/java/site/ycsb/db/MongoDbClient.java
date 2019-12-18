@@ -491,9 +491,14 @@ public class MongoDbClient extends DB {
                             Map<String, ByteIterator> values) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
-      Document query = new Document("_id", key).append("version", version);
+      System.out.println("Key : " + key);
+
+      Document query = new Document("_id", key);
+      if (version != null) {
+        Integer versionToUpdateFrom = (Integer) version;
+        query.append("version", versionToUpdateFrom);
+      }
       Document fieldsToSet = new Document();
-      Long versionToUpdateFrom = (Long) version;
 
       //MongoDB client will only update jobState (top level) field when updating jobs collection
       if (table.equals("jobs")) {
@@ -504,8 +509,12 @@ public class MongoDbClient extends DB {
           fieldsToSet.put(entry.getKey(), entry.getValue().toArray());
         }
       }
-      Document update = new Document("$set", fieldsToSet)
-          .append("$inc", (versionToUpdateFrom+1));
+
+      Document update = new Document("$set", fieldsToSet);
+
+      if (version != null) {
+        update.append("$inc", new Document().append("version", 1));
+      }
 
       FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
       options.returnDocument(ReturnDocument.AFTER);
