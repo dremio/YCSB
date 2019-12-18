@@ -443,7 +443,7 @@ public class CloudSpannerClient extends DB {
       return new Pair(Status.ERROR, null);
     }
 
-    ByteIterator versionByteIter = values.get("version");
+    ByteIterator versionByteIter = versionValues.get("version");
     ByteIterator nextVersionByteIter;
     long nextVersion;
     if (versionByteIter == null) {
@@ -453,7 +453,7 @@ public class CloudSpannerClient extends DB {
       long currentVersion = Utils.bytesToLong(versionByteIter.toArray());
       if (version != null && !version.equals(currentVersion)) {
         // Version mismatch.
-        LOGGER.log(Level.SEVERE, "Version mismatch on findAndUpdate");
+        LOGGER.log(Level.SEVERE, "Version mismatch on findAndUpdate current version:" + currentVersion + ", expected version:" + version);
         return new Pair(Status.ERROR, null);
       }
       nextVersion = currentVersion + 1;

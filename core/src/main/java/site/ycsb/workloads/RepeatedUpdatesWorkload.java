@@ -44,6 +44,7 @@ public class RepeatedUpdatesWorkload extends Workload {
 
   private static class JobIdTracker {
     public List<String> jobIds;
+    public int currentJobId;
   }
 
   @Override
@@ -76,22 +77,22 @@ public class RepeatedUpdatesWorkload extends Workload {
     final HashMap<String, ByteIterator> updatedValues = new HashMap<>();
     // JobStates are numeric values. Iterate through job states.
     Status status = Status.OK;
+    Object version = null;
 
+    int i = 1;
     final long startTime = System.nanoTime();
-    for (String jobId: tracker.jobIds) {
-      int i = 1;
-      Object version = null;
-      while ((i <= 5) && (status.isOk())) {
-        updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
-        Pair statusVersionPair = db.findAndUpdate("jobs", jobId, version,
-            updatedValues);
-        version = statusVersionPair.getVersion();
-        status = statusVersionPair.getStatus();
-        i += 1;
-      }
+    while ((i <= 5) && (status.isOk())) {
+      updatedValues.put("jobState", new StringByteIterator(getJobStateString(i)));
+      Pair statusVersionPair = db.findAndUpdate("jobs", tracker.jobIds.get(tracker.currentJobId % tracker.jobIds.size()), version,
+          updatedValues);
+      version = statusVersionPair.getVersion();
+      status = statusVersionPair.getStatus();
+      i += 1;
     }
+
     final long endTime = System.nanoTime();
     Measurements.getMeasurements().measure("RAPID_UPDATE", (int) (endTime - startTime) / 1000);
+    tracker.currentJobId++;
     return status.isOk();
   }
 
