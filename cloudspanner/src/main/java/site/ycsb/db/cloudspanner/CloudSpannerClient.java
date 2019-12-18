@@ -17,6 +17,8 @@
 package site.ycsb.db.cloudspanner;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
 import com.google.common.base.Joiner;
 import com.google.cloud.spanner.DatabaseId;
@@ -434,34 +436,62 @@ public class CloudSpannerClient extends DB {
   public Pair findAndUpdate(
       String table, String key,
       Object version, Map<String, ByteIterator> values) {
-    HashSet<String> versionReqFields = new HashSet<>();
-    HashMap<String, ByteIterator> versionValues = new HashMap<>();
-    versionReqFields.add("version");
-    Status readStatus = read(table, key, versionReqFields, versionValues);
-    if (!readStatus.isOk()) {
-      LOGGER.log(Level.SEVERE, "Unable to read() during findAndUpdate");
+    String updateQuery = "UPDATE jobs SET version = @newVersion WHERE jobId = @key";
+    long nextVersion;
+    if (version == null) {
+      HashSet<String> versionReqFields = new HashSet<>();
+      HashMap<String, ByteIterator> versionValues = new HashMap<>();
+      versionReqFields.add("version");
+      Status readStatus = read(table, key, versionReqFields, versionValues);
+      if (!readStatus.isOk()) {
+        LOGGER.log(Level.SEVERE, "Unable to read() during findAndUpdate");
+        return new Pair(Status.ERROR, null);
+      }
+
+      ByteIterator versionByteIter = versionValues.get("version");
+      if (versionByteIter == null) {
+        // No version defined in the data. Just generate the version.
+        nextVersion = 1L;
+      } else {
+        updateQuery += " AND version = @oldVersion";
+        version = Utils.bytesToLong(versionByteIter.toArray());
+        nextVersion = (Long) version + 1;
+      }
+    } else {
+      nextVersion = (Long) version + 1;
+    }
+
+    Statement.Builder sBuilder =
+        Statement.newBuilder(updateQuery)
+            .bind("newVersion")
+            .to(nextVersion)
+            .bind("key")
+            .to(key);
+
+    if (version != null) {
+      sBuilder.bind("oldVersion").to((Long)version);
+    }
+
+    final long[] rowCount = new long[] { Long.MIN_VALUE };
+
+    dbClient
+        .readWriteTransaction()
+        .run(
+            new TransactionRunner.TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                rowCount[0] = transaction.executeUpdate(sBuilder.build());
+                System.out.printf("%d record updated.\n", rowCount[0]);
+                return null;
+              }
+            });
+
+    if (rowCount[0] != 1) {
+      LOGGER.log(Level.SEVERE, "Unable find version");
       return new Pair(Status.ERROR, null);
     }
 
-    ByteIterator versionByteIter = versionValues.get("version");
-    ByteIterator nextVersionByteIter;
-    long nextVersion;
-    if (versionByteIter == null) {
-      // No version defined in the data. Just generate the version.
-      nextVersion = 1L;
-    } else {
-      long currentVersion = Utils.bytesToLong(versionByteIter.toArray());
-      if (version != null && !version.equals(currentVersion)) {
-        // Version mismatch.
-        LOGGER.log(Level.SEVERE, "Version mismatch on findAndUpdate current version:" + currentVersion + ", expected version:" + version);
-        return new Pair(Status.ERROR, null);
-      }
-      nextVersion = currentVersion + 1;
-    }
-    nextVersionByteIter = new ByteArrayByteIterator(Utils.longToBytes(nextVersion));
-    values.put("version", nextVersionByteIter);
-    Status updateStatus = update(table, key, values);
-    return new Pair(updateStatus, nextVersion);
+    return new Pair(Status.OK, nextVersion);
   }
 
   //Works with jobs and dac_namespace schema as well
