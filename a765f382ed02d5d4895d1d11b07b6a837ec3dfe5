@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f86f6239_707cf154",
+        "filename": "core/src/main/java/site/ycsb/workloads/ScanReadWorkload.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000086
+      },
+      "writtenOn": "2019-12-19T18:42:43Z",
+      "side": 1,
+      "message": "Remove this please.",
+      "range": {
+        "startLine": 145,
+        "startChar": 7,
+        "endLine": 146,
+        "endChar": 7
+      },
+      "revId": "a765f382ed02d5d4895d1d11b07b6a837ec3dfe5",
+      "serverId": "8ca9cf2d-83f4-421d-8552-b009c9e056de",
+      "unresolved": true
+    }
+  ]
+}
