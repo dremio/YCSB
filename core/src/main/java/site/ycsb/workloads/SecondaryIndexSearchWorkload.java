@@ -80,7 +80,8 @@ public class SecondaryIndexSearchWorkload extends Workload {
     if (result.size() < recordCount) {
       return false;
     }
-    Measurements.getMeasurements().measure("SECONDARY_INDEX_SEARCH", (int) (endTime - startTime) / 1000);
+      final long latency = (endTime - startTime);
+      Measurements.getMeasurements().measure("SECONDARY_INDEX_SEARCH", (int)(latency/1000));
     return status.isOk();
   }
 }

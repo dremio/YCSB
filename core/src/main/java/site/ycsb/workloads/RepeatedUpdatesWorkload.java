@@ -91,7 +91,8 @@ public class RepeatedUpdatesWorkload extends Workload {
     }
 
     final long endTime = System.nanoTime();
-    Measurements.getMeasurements().measure("RAPID_UPDATE", (int) (endTime - startTime) / 1000);
+    final long latency = (endTime - startTime);
+    Measurements.getMeasurements().measure("RAPID_UPDATE", (int)(latency/1000));
     tracker.currentJobId++;
     return status.isOk();
   }
