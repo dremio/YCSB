@@ -17,7 +17,6 @@ package site.ycsb.workloads;
 
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Vector;
 
 import site.ycsb.ByteIterator;
@@ -47,6 +46,7 @@ public class KeyRangeSearchWorkload extends Workload {
 
     public ThreadOffset(int threadId, int threadCount, int operationCount) {
       this.start = (threadId) * (operationCount/threadCount);
+      this.count = 0;
     }
   }
 
@@ -66,12 +66,11 @@ public class KeyRangeSearchWorkload extends Workload {
     final Vector<HashMap<String, ByteIterator>> result = new Vector<>();
 
     // Maximum index for source is 1499 in the inserted data.
-    int mysourceIndex = (threadOffset.start + threadOffset.count) % 1500;
+    int mySourceIndex = (threadOffset.start + threadOffset.count) % 1500;
     // Maximum index for table is 9 in the inserted data.
-    int tableIndex = new Random().nextInt(7) + 2;
-    final String startKey =  String.format("/mysource%s", mysourceIndex);
-    final String endKey =  String.format("/mysource%s/schema/table%s/file30.txt", mysourceIndex, tableIndex);
-
+    int tableIndex = (threadOffset.count % 7) + 3;
+    final String startKey =  String.format("/mysource%s", mySourceIndex);
+    final String endKey =  String.format("/mysource%s/schema/table%s/file30.txt", mySourceIndex, tableIndex);
     long startTime = System.nanoTime();
     status = db.scanWithNamespaceKeyFilter("dac_namespace", startKey, endKey, recordCount, null, result);
     long endTime = System.nanoTime();
